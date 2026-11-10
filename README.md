@@ -4,7 +4,8 @@ Programa para practicar **tablas de verdad**, **mapas de Karnaugh** y **simplifi
 
 Es un solo archivo HTML: funciona en cualquier navegador, también sin internet.
 
-**Úsalo en línea:** https://TU-USUARIO.github.io/taller-de-compuertas/
+**Úsalo en línea:** https://gerundista.github.io/taller-de-compuertas/
+
 
 ## Qué incluye
 
