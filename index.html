@@ -1,0 +1,2308 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22%3E%3Crect width=%22128%22 height=%22128%22 rx=%2224%22 fill=%22%23141920%22/%3E%3Cpath d=%22M14 48H40M14 80H40%22 stroke=%22%23E6EAF0%22 stroke-width=%226%22 stroke-linecap=%22round%22/%3E%3Cpath d=%22M40 30H62A34 34 0 0 1 62 98H40Z%22 fill=%22%23141920%22 stroke=%22%23E6EAF0%22 stroke-width=%226%22/%3E%3Ccircle cx=%22103%22 cy=%2264%22 r=%226%22 fill=%22%23141920%22 stroke=%22%23E6EAF0%22 stroke-width=%225%22/%3E%3Cpath d=%22M109 64H118%22 stroke=%22%23FFB21E%22 stroke-width=%226%22 stroke-linecap=%22round%22/%3E%3C/svg%3E">
+<title>Taller de Compuertas</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Practica tablas de verdad, mapas de Karnaugh y simplificación booleana de compuertas AND, NAND, OR, NOR, XOR, XNOR, NOT y Buffer con 2, 3 y 4 entradas.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<style>
+:root{
+  /* Layout: banco de pruebas — encabezado con rieles de protoboard, tira de controles, y dos columnas (circuito + tabla | mapa K + álgebra) */
+  --paper:#EDF0F3;
+  --surface:#FFFFFF;
+  --sunk:#E3E7EC;
+  --ink:#141920;
+  --muted:#586271;
+  --rule:#C7CED8;
+  --rule-soft:#DDE2E8;
+  --hi:#FFB21E;
+  --hi-ink:#211600;
+  --hi-soft:#FFEDC7;
+  --ok:#11804B; --ok-soft:#DAF1E4;
+  --bad:#C42F3D; --bad-soft:#F9DEE1;
+  --sel:#2357D4; --sel-soft:#DCE6FB;
+  --rail-r:#D8443B; --rail-b:#2E62C8;
+  --g0:#D9480F; --g1:#1D63D6; --g2:#0C9A68; --g3:#8E3FB4; --g4:#C2185B; --g5:#00838F; --g6:#7B5A3C; --g7:#4E5BBF;
+  --font-display:"Barlow Condensed","Arial Narrow","Noto Sans",sans-serif;
+  --font-body:"Barlow","Noto Sans","Cantarell",system-ui,sans-serif;
+  --font-mono:"JetBrains Mono","DejaVu Sans Mono",ui-monospace,monospace;
+  --cell:56px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#0E1217; --surface:#161B22; --sunk:#0A0D11; --ink:#E6EAF0; --muted:#98A2AF; --rule:#2C3540; --rule-soft:#222932;
+    --hi:#FFB21E; --hi-ink:#211600; --hi-soft:#3A2D0F;
+    --ok:#3DCC88; --ok-soft:#0F2F1F; --bad:#FF6E7A; --bad-soft:#3B151A; --sel:#6E9BFF; --sel-soft:#1B2A4A;
+    --rail-r:#E35A50; --rail-b:#5B8BEA;
+    --g0:#FF7F4D; --g1:#62A0FF; --g2:#3BD29A; --g3:#C38BF0; --g4:#F06BA8; --g5:#2CCFE0; --g6:#C9A27F; --g7:#9AA6FF;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0E1217; --surface:#161B22; --sunk:#0A0D11; --ink:#E6EAF0; --muted:#98A2AF; --rule:#2C3540; --rule-soft:#222932;
+  --hi:#FFB21E; --hi-ink:#211600; --hi-soft:#3A2D0F;
+  --ok:#3DCC88; --ok-soft:#0F2F1F; --bad:#FF6E7A; --bad-soft:#3B151A; --sel:#6E9BFF; --sel-soft:#1B2A4A;
+  --rail-r:#E35A50; --rail-b:#5B8BEA;
+  --g0:#FF7F4D; --g1:#62A0FF; --g2:#3BD29A; --g3:#C38BF0; --g4:#F06BA8; --g5:#2CCFE0; --g6:#C9A27F; --g7:#9AA6FF;
+  color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font:400 15px/1.55 var(--font-body)}
+button,select,input{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--sel);outline-offset:2px}
+p{margin:0}
+.wrap{max-width:1220px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.mono{font-family:var(--font-mono)}
+.muted{color:var(--muted)}
+.ov{display:inline-block;border-top:.085em solid currentColor;padding-top:.06em;line-height:1.05;margin-inline:.045em}
+.t{white-space:nowrap}
+
+/* encabezado */
+.top{background:var(--surface)}
+.top-in{display:flex;align-items:center;justify-content:space-between;gap:12px 28px;flex-wrap:wrap;padding-block:14px 10px}
+.brand{display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit;min-width:0}
+.brand .mini{width:50px;height:38px;flex:none}
+.brand .mini .o{stroke:var(--hi)}
+.brand-name{display:block;font:700 27px/1 var(--font-display);text-transform:uppercase;letter-spacing:.03em;text-wrap:balance}
+.brand-sub{display:block;font:500 13.5px/1.3 var(--font-body);color:var(--muted);margin-top:4px}
+.tabs{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;max-width:100%}
+.tabs::-webkit-scrollbar{display:none}
+.tabs button{border:0;background:none;padding:9px 12px;font:600 15px/1 var(--font-display);text-transform:uppercase;letter-spacing:.07em;color:var(--muted);border-radius:4px;white-space:nowrap;display:flex;align-items:center;gap:8px}
+.tabs button::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--rule);flex:none}
+.tabs button:hover{color:var(--ink)}
+.tabs button[aria-selected="true"]{color:var(--ink);background:var(--sunk)}
+.tabs button[aria-selected="true"]::before{background:var(--hi);box-shadow:0 0 7px var(--hi)}
+.rails{height:15px;background:
+  linear-gradient(var(--rail-r),var(--rail-r)) 0 2px/100% 2px no-repeat,
+  linear-gradient(var(--rail-b),var(--rail-b)) 0 11px/100% 2px no-repeat,
+  radial-gradient(circle,var(--rule) 1.4px,transparent 1.9px) 6px 1.5px/13px 13px repeat-x,
+  var(--surface);border-bottom:1px solid var(--rule)}
+
+/* tira de configuración */
+.strip-in{display:flex;flex-wrap:wrap;gap:12px 28px;padding-block:14px 12px;align-items:flex-end}
+.field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.f-gate{flex:1 1 560px}
+.flabel{font:600 12px/1 var(--font-display);text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+@media (max-width:700px){.chips{flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px;scrollbar-width:thin}}
+.chip{display:flex;align-items:center;gap:6px;border:1px solid var(--rule);background:var(--surface);border-radius:4px;padding:4px 10px 4px 5px;font:600 14px/1 var(--font-display);letter-spacing:.05em;text-transform:uppercase;white-space:nowrap;flex:none}
+.chip .mini{width:30px;height:22px}
+.chip:hover{border-color:var(--ink)}
+.chip[aria-checked="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.chip[aria-checked="true"] .mini path,.chip[aria-checked="true"] .mini circle{stroke:var(--surface);fill:var(--ink)}
+.chip[aria-checked="true"] .mini .w{fill:none}
+.f-gate.dim .chips{opacity:.42}
+.f-gate .dimnote{font-size:12.5px;color:var(--muted);display:none}
+.f-gate.dim .dimnote{display:block}
+.mini path,.mini circle{fill:var(--surface);stroke:var(--ink);stroke-width:8;stroke-linejoin:round}
+.mini .w,.mini .nf{fill:none}
+.seg{display:inline-flex;border:1px solid var(--rule);border-radius:4px;background:var(--surface);overflow:hidden;flex-wrap:nowrap;max-width:100%}
+.seg button{border:0;background:none;padding:8px 14px;font:600 15px/1 var(--font-mono);min-width:42px;white-space:nowrap}
+.seg button+button{border-left:1px solid var(--rule)}
+.seg button:hover{background:var(--sunk)}
+.seg button[aria-checked="true"]{background:var(--ink);color:var(--surface)}
+.seg.txt button{font:600 13px/1 var(--font-display);letter-spacing:.06em;text-transform:uppercase;padding:8px 11px}
+
+main{padding-block:20px 36px}
+.lgrid,.pgrid{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,6fr);gap:18px;align-items:start}
+.col{display:grid;gap:18px;min-width:0}
+@media (max-width:920px){.lgrid,.pgrid{grid-template-columns:minmax(0,1fr)}}
+
+.panel{background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:16px 18px 18px;min-width:0}
+.ph{display:flex;align-items:center;justify-content:space-between;gap:8px 12px;flex-wrap:wrap;margin-bottom:12px;padding-bottom:9px;border-bottom:1px solid var(--rule-soft)}
+.ph h2{font:700 15px/1.2 var(--font-display);text-transform:uppercase;letter-spacing:.09em;margin:0}
+.meta{font:500 12px var(--font-mono);color:var(--muted)}
+.hint{font-size:14px;color:var(--muted);margin-bottom:10px;max-width:68ch}
+
+/* tarjeta de compuerta */
+.gtitle{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:4px}
+.gname{font:700 40px/1 var(--font-display);letter-spacing:.02em;text-transform:uppercase;margin:0}
+.gname small{font:500 19px var(--font-display);color:var(--muted);text-transform:none;letter-spacing:.02em;margin-left:6px}
+.ic-chip{position:relative;background:var(--ink);color:var(--surface);font:500 12.5px/1 var(--font-mono);padding:6px 10px 6px 14px;border-radius:3px;letter-spacing:.04em}
+.ic-chip::before{content:"";position:absolute;left:-1px;top:50%;width:6px;height:10px;margin-top:-5px;background:var(--surface);border-radius:0 6px 6px 0}
+svg.gate{width:100%;max-width:460px;height:auto;display:block;margin:0 auto}
+svg.gate .body path,svg.gate .body circle{fill:var(--surface);stroke:var(--ink);stroke-width:2.3;stroke-linejoin:round}
+svg.gate .body .nf{fill:none}
+svg.gate .w{fill:none;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+svg.gate .w.nc{stroke:var(--rule);stroke-dasharray:3 4}
+svg.gate .ncdot{fill:var(--surface);stroke:var(--muted);stroke-width:1.5}
+svg.gate .lbl{font:700 15px var(--font-mono);fill:var(--ink)}
+svg.gate .val{font:700 14px var(--font-mono);fill:var(--ink)}
+svg.gate .ic{font:500 11px var(--font-mono);fill:var(--muted);letter-spacing:.05em}
+svg.gate .sw{cursor:pointer}
+svg.gate .sw-hit{fill:transparent;stroke:none}
+svg.gate .sw:focus-visible{outline:none}
+svg.gate .sw:focus-visible .sw-hit{stroke:var(--sel);stroke-width:2}
+svg.gate .sw-track{fill:var(--sunk);stroke:var(--muted);stroke-width:1.2}
+svg.gate .sw.on .sw-track{fill:var(--hi);stroke:var(--hi)}
+svg.gate .sw-knob{fill:var(--surface);stroke:var(--ink);stroke-width:1.3}
+svg.gate .led{fill:var(--sunk);stroke:var(--ink);stroke-width:1.6}
+svg.gate .led.on{fill:var(--hi);filter:drop-shadow(0 0 5px var(--hi))}
+svg.gate .led.q{fill:var(--surface);stroke-dasharray:3 3}
+svg.gate .ledt{font:700 13px var(--font-mono);fill:var(--muted)}
+svg.gate .ledt.on{fill:var(--hi-ink)}
+.readout{display:flex;flex-wrap:wrap;justify-content:center;gap:4px 12px;font:500 14px var(--font-mono);color:var(--muted);margin-top:4px}
+.readout b{color:var(--ink)}
+.readout .fo{background:var(--hi);color:var(--hi-ink);padding:0 6px;border-radius:3px}
+.direct{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-top:12px;padding-top:12px;border-top:1px solid var(--rule-soft)}
+.dlabel{font:600 12px var(--font-display);text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}
+
+/* tablas de verdad */
+.ttbox{overflow-x:auto}
+table.tt{border-collapse:collapse;font:500 15px/1 var(--font-mono);font-variant-numeric:tabular-nums;margin:0 auto}
+.tt th{font:700 14px var(--font-mono);padding:8px 13px;border-bottom:2px solid var(--ink);text-align:center}
+.tt td{padding:6px 13px;text-align:center;border-bottom:1px solid var(--rule-soft)}
+.tt .mi{color:var(--muted);font-size:12px;font-weight:400;padding-right:16px}
+.tt .fcol{border-left:3px double var(--ink);font-weight:700;min-width:48px}
+.tt td.fcol.on{background:var(--hi);color:var(--hi-ink)}
+.tt tr.cur td{background:var(--sel-soft)}
+.tt tr.cur td.fcol.on{background:var(--hi)}
+.tt tr.cur td:first-child{box-shadow:inset 3px 0 0 var(--sel)}
+.tt tr.click{cursor:pointer}
+.tt tr.click:hover td:not(.fcol){background:var(--sunk)}
+.tt td.edit{padding:3px 9px}
+.tt.sm{font-size:13px}.tt.sm td{padding:3px 9px}.tt.sm th{padding:5px 9px;font-size:13px}
+.fbtn{width:46px;height:30px;border:1px solid var(--rule);border-radius:4px;background:var(--surface);font:700 15px var(--font-mono)}
+.fbtn.v1{background:var(--hi);border-color:var(--hi);color:var(--hi-ink)}
+.fbtn.q{color:var(--muted);border-style:dashed}
+.fbtn.ok{box-shadow:0 0 0 2px var(--ok)}
+.fbtn.bad{box-shadow:0 0 0 2px var(--bad);background:var(--bad-soft);color:var(--ink)}
+
+/* mapa de Karnaugh */
+.kbox{overflow-x:auto;display:flex;justify-content:center;padding:4px 2px 6px}
+.kmap{display:inline-grid;grid-template-columns:auto auto;grid-template-rows:auto auto;font-family:var(--font-mono);--c:var(--cell)}
+.kmap.sm{--c:34px}
+.kcorner{position:relative;width:54px;height:42px;background:linear-gradient(to top right,transparent calc(50% - .7px),var(--muted) 50%,transparent calc(50% + .7px))}
+.kcv,.krv{position:absolute;font-weight:700;font-size:13px}
+.kcv{right:3px;top:1px}.krv{left:3px;bottom:1px}
+.kch{display:grid;grid-template-columns:repeat(var(--cols),var(--c));gap:1px;align-items:end;padding-inline:1.5px}
+.kch span{text-align:center;font-size:12px;color:var(--muted);padding-bottom:5px}
+.krh{display:grid;grid-template-rows:repeat(var(--rows),var(--c));gap:1px;padding-block:1.5px}
+.krh span{display:flex;align-items:center;justify-content:flex-end;padding-right:8px;font-size:12px;color:var(--muted)}
+.kcells{position:relative;display:grid;grid-template-columns:repeat(var(--cols),var(--c));grid-template-rows:repeat(var(--rows),var(--c));gap:1px;background:var(--rule);border:1.5px solid var(--ink)}
+.kc{position:relative;display:flex;align-items:center;justify-content:center;background:var(--surface);border:0;margin:0;padding:0;font:600 19px var(--font-mono);color:var(--muted)}
+button.kc:hover{background:var(--sunk)}
+.kc.on{background:var(--hi-soft);color:var(--ink);font-weight:700}
+.kc.q{color:var(--muted)}
+.ki{position:absolute;left:4px;top:2px;font:400 10px/1 var(--font-mono);color:var(--muted)}
+.kc.sel{background:var(--sel-soft);box-shadow:inset 0 0 0 2.5px var(--sel);color:var(--ink)}
+.kc.ok{box-shadow:inset 0 0 0 2.5px var(--ok)}
+.kc.bad{background:var(--bad-soft);box-shadow:inset 0 0 0 2.5px var(--bad);color:var(--ink)}
+.kc.cur::after{content:"";position:absolute;inset:5px;border:2px dashed var(--ink);border-radius:5px;opacity:.55}
+.kmap.sm .kc{font-size:14px}
+.kmap.sm .kcorner{width:40px;height:32px}
+.kmap.sm .kcv,.kmap.sm .krv{font-size:11px}
+.kmap.sm .kch span,.kmap.sm .krh span{font-size:11px}
+.kgroups{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.kg{position:absolute;border:2.5px solid var(--gcol);border-radius:12px;background:color-mix(in srgb,var(--gcol) 6%,transparent);transition:opacity .15s,box-shadow .15s}
+.kg.oL{border-left-style:none;border-top-left-radius:0;border-bottom-left-radius:0}
+.kg.oR{border-right-style:none;border-top-right-radius:0;border-bottom-right-radius:0}
+.kg.oT{border-top-style:none;border-top-left-radius:0;border-top-right-radius:0}
+.kg.oB{border-bottom-style:none;border-bottom-left-radius:0;border-bottom-right-radius:0}
+.kgroups.focus .kg{opacity:.15}
+.kgroups.focus .kg.hl{opacity:1;box-shadow:0 0 0 2px var(--gcol)}
+.kmap.sm .kg{border-width:2px;border-radius:8px}
+
+/* leyenda y listas de grupos */
+.legend,.glist{list-style:none;margin:12px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:6px}
+.legend li,.glist li{display:flex;align-items:center;gap:10px;border:1px solid var(--rule);border-left:5px solid var(--gcol);border-radius:4px;padding:5px 10px;font:500 13px var(--font-mono);background:var(--surface)}
+.legend li{cursor:default}
+.legend .lt{font:600 16px/1.9 var(--font-mono)}
+.legend .lm,.glist .lm{color:var(--muted)}
+.glist li{padding:3px 4px 3px 10px}
+.glist button{border:0;background:none;padding:4px 8px;color:var(--muted);font-size:17px;line-height:1;border-radius:3px}
+.glist button:hover{background:var(--sunk);color:var(--ink)}
+.glist li.warn{background:var(--hi-soft)}
+.glist li.bad{background:var(--bad-soft)}
+
+/* expresiones */
+.ex{font:500 18px/2.15 var(--font-mono)}
+.ex.sm{font-size:14px;line-height:2.1;color:var(--muted)}
+.ex.big{font-size:22px;font-weight:700}
+.ex.inl{font-size:16px;line-height:1.9;display:inline}
+.ex.center{text-align:center}
+.term.c{border-bottom:3px solid var(--gcol);padding-bottom:1px}
+.xl{display:grid;gap:12px;margin:0}
+.xr{display:grid;grid-template-columns:150px minmax(0,1fr);gap:2px 16px;align-items:baseline;padding-bottom:12px;border-bottom:1px solid var(--rule-soft)}
+.xr:last-child{border-bottom:0;padding-bottom:0}
+.xr dt{font:600 12px/1.35 var(--font-display);text-transform:uppercase;letter-spacing:.09em;color:var(--muted);padding-top:9px}
+.xr dd{margin:0;min-width:0;display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.xr dd .ex{min-width:0}
+.xr.key dt{color:var(--ink)}
+@media (max-width:560px){.xr{grid-template-columns:minmax(0,1fr)}}
+.copy{border:1px solid var(--rule);background:var(--surface);border-radius:4px;padding:5px 9px;font:600 12px/1 var(--font-display);text-transform:uppercase;letter-spacing:.08em;color:var(--muted);white-space:nowrap}
+.copy:hover{border-color:var(--ink);color:var(--ink)}
+
+/* paso a paso */
+.route+.route{margin-top:18px;padding-top:16px;border-top:1px solid var(--rule-soft)}
+.route h3{font:700 14px var(--font-display);text-transform:uppercase;letter-spacing:.09em;margin:0 0 8px}
+.route p{margin:0 0 8px;max-width:70ch}
+.route .eq,.steps .eq{font:500 16.5px/2.1 var(--font-mono)}
+ol.steps{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.steps li{padding:6px 0 6px 14px;border-left:3px solid var(--rule)}
+.steps li.g{border-left-color:var(--gcol)}
+.steps .gtag{font:700 12.5px var(--font-display);text-transform:uppercase;letter-spacing:.08em;color:var(--gcol)}
+.steps .law{font-size:14px;color:var(--muted);max-width:70ch}
+
+/* práctica */
+.exbar{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;margin-bottom:16px}
+.sel{display:flex;align-items:center;gap:8px;font:600 12px var(--font-display);text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}
+.sel select{font:500 15px var(--font-body);text-transform:none;letter-spacing:0;color:var(--ink);background:var(--surface);border:1px solid var(--rule);border-radius:4px;padding:7px 10px;max-width:100%}
+.score{margin-left:auto;font:500 13px var(--font-mono);color:var(--muted)}
+.score b{color:var(--ink)}
+.btn{border:1px solid var(--rule);background:var(--surface);border-radius:4px;padding:10px 14px;font:600 14px/1 var(--font-display);text-transform:uppercase;letter-spacing:.07em}
+.btn:hover:not(:disabled){border-color:var(--ink)}
+.btn.primary{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.btn.ghost{background:transparent;border-color:transparent;text-decoration:underline;text-underline-offset:3px}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.kicker{font:600 12px var(--font-display);text-transform:uppercase;letter-spacing:.11em;color:var(--muted)}
+.ptitle{font:700 34px/1.05 var(--font-display);text-transform:uppercase;margin:4px 0 6px;letter-spacing:.02em}
+.ptitle small{font:500 18px var(--font-display);color:var(--muted);text-transform:none;margin-left:6px}
+.prompt .ex.big{margin-top:4px}
+.prompt .hint{margin-top:10px;margin-bottom:0}
+.fb{margin-top:14px;padding:12px 14px;border-radius:4px;border:1px solid var(--rule);background:var(--sunk);font-size:15px}
+.fb:empty{display:none}
+.fb.ok{background:var(--ok-soft);border-color:var(--ok)}
+.fb.bad{background:var(--bad-soft);border-color:var(--bad)}
+.fb.warn{background:var(--hi-soft);border-color:var(--hi)}
+.fb ul{margin:6px 0 0;padding-left:20px}
+.fb li+li{margin-top:2px}
+.stepper{list-style:none;margin:0 0 12px;padding:0;display:flex;gap:6px;flex-wrap:wrap;counter-reset:s}
+.stepper li{counter-increment:s}
+.stepper button{display:flex;align-items:center;gap:8px;border:1px solid var(--rule);background:var(--surface);border-radius:4px;padding:5px 12px 5px 5px;font:600 13.5px var(--font-display);text-transform:uppercase;letter-spacing:.06em}
+.stepper button::before{content:counter(s);display:grid;place-items:center;width:23px;height:23px;border-radius:50%;background:var(--sunk);font:700 12px var(--font-mono);color:var(--ink)}
+.stepper button[aria-current="step"]{border-color:var(--ink);background:var(--ink);color:var(--surface)}
+.stepper button[aria-current="step"]::before{background:var(--hi);color:var(--hi-ink)}
+.stepper button.done:not([aria-current="step"])::before{content:"✓";background:var(--ok);color:var(--surface)}
+.stepper button:disabled{opacity:.45;cursor:not-allowed}
+.xin-l{display:block;font:600 12px var(--font-display);text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin:14px 0 6px}
+.xin{display:flex;align-items:stretch;border:1.5px solid var(--ink);border-radius:4px;background:var(--surface);overflow:hidden}
+.xin:focus-within{border-color:var(--sel);box-shadow:0 0 0 3px var(--sel-soft)}
+.xin-f{padding:0 11px;font:700 17px var(--font-mono);background:var(--sunk);display:flex;align-items:center;border-right:1px solid var(--rule)}
+.xin input{flex:1;min-width:0;border:0;background:transparent;padding:11px 12px;font:500 18px var(--font-mono);outline:none}
+.prev{min-height:2.6em;font:500 18px/2.2 var(--font-mono);padding:4px 2px 2px}
+.prev .pl{font:600 11.5px var(--font-display);text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-right:8px}
+.prev .err{font:400 14px/1.4 var(--font-body);color:var(--muted)}
+.keys{display:flex;flex-wrap:wrap;gap:6px}
+.keys button{min-width:44px;height:40px;border:1px solid var(--rule);background:var(--surface);border-radius:4px;font:600 16px var(--font-mono)}
+.keys button:hover{border-color:var(--ink)}
+.keys .wide{padding:0 12px;font:600 13px var(--font-display);text-transform:uppercase;letter-spacing:.06em}
+.syntax{font-size:13.5px;color:var(--muted);margin-top:10px;line-height:1.9}
+.syntax code{font:500 13px var(--font-mono);background:var(--sunk);padding:2px 6px;border-radius:3px;color:var(--ink)}
+details.more{margin-top:14px;border-top:1px solid var(--rule-soft);padding-top:12px}
+details.more summary{cursor:pointer;font:700 14px var(--font-display);text-transform:uppercase;letter-spacing:.09em}
+details.more[open] summary{margin-bottom:12px}
+.solmap{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start;margin-top:12px}
+
+/* tabla de verdad: modos */
+.modes{display:grid;grid-template-columns:repeat(auto-fill,minmax(156px,1fr));gap:8px;margin-bottom:16px}
+.mode{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:3px;border:1px solid var(--rule);background:var(--surface);border-radius:5px;padding:9px 12px 10px;text-align:left;min-width:0}
+.mode .mn{font:700 15px/1.15 var(--font-display);text-transform:uppercase;letter-spacing:.06em}
+.mode .md{font-size:12.5px;line-height:1.3;color:var(--muted)}
+.mode .mc{margin-top:auto;padding-top:4px;font:600 11px/1 var(--font-mono);color:var(--ok)}
+.mode:hover{border-color:var(--ink)}
+.mode[aria-checked="true"]{background:var(--ink);border-color:var(--ink);color:var(--surface)}
+.mode[aria-checked="true"] .md{color:var(--surface);opacity:.72}
+.mode[aria-checked="true"] .mc{color:var(--hi)}
+@media (max-width:700px){.modes{display:flex;overflow-x:auto;padding-bottom:4px;scrollbar-width:thin}.mode{flex:none;width:158px}}
+.stack{display:grid;gap:18px}
+.tt th.xc{vertical-align:bottom;padding:6px 10px 8px}
+.tt th .cl{display:block;font:700 14px/1.3 var(--font-mono)}
+.tt th .ce{display:block;font:500 13px/1.75 var(--font-mono);white-space:nowrap}
+.tt th .co{display:block;font:500 10.5px/1.3 var(--font-mono);color:var(--muted);white-space:nowrap;letter-spacing:.02em}
+.tt .sep{border-left:3px double var(--ink)}
+.tt tr.diff td{background:var(--bad-soft)}
+.fbtn:disabled{cursor:default}
+.fbtn.flag{text-decoration:line-through;text-decoration-thickness:2px;background:var(--bad-soft);border-color:var(--bad);color:var(--bad)}
+.fbtn.fixed{background:var(--ok-soft);border-color:var(--ok);color:var(--ink);font-size:13px}
+.verdict{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;margin-top:14px;padding-top:12px;border-top:1px solid var(--rule-soft)}
+.verdict .flabel{margin-right:4px}
+svg.circ{width:100%;max-width:600px;height:auto;display:block;margin:0 auto}
+.circbox{overflow-x:auto}
+@media (max-width:560px){svg.circ{min-width:470px}}
+svg.circ .body path,svg.circ .body circle{fill:var(--surface);stroke:var(--ink);stroke-width:2.2;stroke-linejoin:round;vector-effect:non-scaling-stroke}
+svg.circ .body .nf{fill:none}
+svg.circ .w{fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+svg.circ .lbl{font:700 15px var(--font-mono);fill:var(--ink)}
+svg.circ .val{font:700 12px var(--font-mono);fill:var(--muted)}
+svg.circ .wl{font:700 13px var(--font-mono);fill:var(--sel)}
+svg.circ .gn{font:600 10.5px var(--font-mono);fill:var(--muted);letter-spacing:.04em}
+svg.circ .led{fill:var(--sunk);stroke:var(--ink);stroke-width:1.6}
+svg.circ .led.on{fill:var(--hi);filter:drop-shadow(0 0 5px var(--hi))}
+svg.circ .led.q{fill:var(--surface);stroke-dasharray:3 3}
+svg.circ .ledt{font:700 12px var(--font-mono);fill:var(--muted)}
+svg.circ .ledt.on{fill:var(--hi-ink)}
+.gchoices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.gch{display:flex;align-items:center;gap:10px;border:1.5px solid var(--rule);background:var(--surface);border-radius:5px;padding:5px 12px 5px 6px;font:600 16px/1.2 var(--font-display);text-transform:uppercase;letter-spacing:.05em;text-align:left;min-width:0}
+.gch .mini{width:42px;height:31px;flex:none}
+.gch:hover:not(:disabled){border-color:var(--ink)}
+.gch:disabled{cursor:default;color:inherit}
+.gch.ok{border-color:var(--ok);background:var(--ok-soft)}
+.gch.bad{border-color:var(--bad);background:var(--bad-soft)}
+.gch.dimmed{opacity:.5}
+.rp{max-width:660px;margin:0 auto;padding:20px 22px 22px}
+.rphead{display:flex;justify-content:space-between;align-items:baseline;gap:12px;font:600 13px var(--font-display);text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin-bottom:8px}
+.rphead b{color:var(--ink)}
+#rpLeft{font:700 16px var(--font-mono);color:var(--ink);letter-spacing:0;text-transform:none}
+.rptime{height:8px;background:var(--sunk);border-radius:4px;overflow:hidden}
+.rptime span{display:block;height:100%;background:var(--hi);transition:width .1s linear}
+.rpcard{text-align:center;margin-top:16px}
+.rpgate{font:700 46px/1 var(--font-display);text-transform:uppercase;letter-spacing:.03em}
+.rpcard svg.gate{max-width:380px}
+.rpbtns{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px}
+.rpbtn{height:80px;border:2px solid var(--ink);border-radius:8px;background:var(--surface);font:700 40px var(--font-mono)}
+.rpbtn:hover{background:var(--sunk)}
+.rpbtn:active{background:var(--hi);color:var(--hi-ink)}
+.rplast{min-height:1.7em;margin-top:12px;font:500 14px var(--font-mono);color:var(--muted)}
+.rplast.ok{color:var(--ok)}
+.rplast.bad{color:var(--bad)}
+
+/* examen */
+.qwrap{max-width:860px;margin:0 auto}
+.qcard{padding:22px 22px 24px}
+.qhead{display:flex;justify-content:space-between;gap:12px;font:600 13px var(--font-display);text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin-bottom:8px}
+.qhead b{color:var(--ink)}
+.qbar{height:6px;background:var(--sunk);border-radius:3px;overflow:hidden}
+.qbar span{display:block;height:100%;background:var(--ink);transition:width .25s}
+.qprompt{font:500 20px/1.45 var(--font-body);margin:18px 0 14px;text-wrap:balance}
+.qfig{display:flex;justify-content:center;overflow-x:auto;margin-bottom:16px}
+.qfig svg.gate{max-width:380px}
+.qopts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+@media (max-width:560px){.qopts{grid-template-columns:minmax(0,1fr)}}
+.qopt{text-align:left;border:1.5px solid var(--rule);background:var(--surface);border-radius:5px;padding:10px 14px;display:flex;gap:12px;align-items:center;min-width:0}
+.qopt .qk{font:700 12px var(--font-mono);color:var(--muted);border:1px solid var(--rule);border-radius:3px;width:22px;height:22px;display:grid;place-items:center;flex:none}
+.qopt .qv{font:600 19px/1.9 var(--font-display);letter-spacing:.04em;text-transform:uppercase;min-width:0}
+.qopt.mono .qv{font:500 16px/2 var(--font-mono);text-transform:none;letter-spacing:0}
+.qopt:hover:not(:disabled){border-color:var(--ink)}
+.qopt:disabled{cursor:default;color:inherit}
+.qopt.ok{border-color:var(--ok);background:var(--ok-soft)}
+.qopt.bad{border-color:var(--bad);background:var(--bad-soft)}
+.qopt.dimmed{opacity:.55}
+.qstart h2,.qend h2{font:700 34px/1.05 var(--font-display);text-transform:uppercase;margin:0 0 8px;letter-spacing:.02em}
+.qstart p{max-width:62ch;color:var(--muted)}
+.qset{display:flex;flex-wrap:wrap;gap:14px 28px;margin:18px 0 6px}
+.bigscore{font:700 76px/1 var(--font-display);letter-spacing:.01em}
+.bigscore small{font-size:34px;color:var(--muted)}
+.review{list-style:none;padding:0;margin:16px 0 0;display:grid;gap:10px}
+.review li{border:1px solid var(--rule);border-left:4px solid var(--bad);border-radius:4px;padding:10px 12px}
+.review .rq{font-weight:600}
+.review .ra{font-size:14px;color:var(--muted);margin-top:2px}
+
+.foot{border-top:1px solid var(--rule);background:var(--surface)}
+.foot-in{padding-block:14px 18px;font-size:13.5px;color:var(--muted);display:flex;flex-wrap:wrap;gap:6px 22px}
+.foot code{font:500 12.5px var(--font-mono);background:var(--sunk);padding:1px 6px;border-radius:3px;color:var(--ink)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="app">
+<header class="top">
+  <div class="wrap top-in">
+    <a class="brand" href="#aprender" aria-label="Taller de Compuertas: ir a Aprender">
+      <span id="brandMark"></span>
+      <span><span class="brand-name">Taller de Compuertas</span><span class="brand-sub">Tablas de verdad · Mapas de Karnaugh · Álgebra booleana</span></span>
+    </a>
+    <nav class="tabs" role="tablist" aria-label="Secciones">
+      <button type="button" role="tab" id="tab-aprender" data-tab="aprender" aria-controls="v-aprender">Aprender</button>
+      <button type="button" role="tab" id="tab-tabla" data-tab="tabla" aria-controls="v-tabla">Tabla de verdad</button>
+      <button type="button" role="tab" id="tab-mapa" data-tab="mapa" aria-controls="v-mapa">Mapa K</button>
+      <button type="button" role="tab" id="tab-algebra" data-tab="algebra" aria-controls="v-algebra">Álgebra</button>
+      <button type="button" role="tab" id="tab-examen" data-tab="examen" aria-controls="v-examen">Examen</button>
+    </nav>
+  </div>
+  <div class="rails" aria-hidden="true"></div>
+</header>
+
+<section class="strip" aria-label="Configuración">
+  <div class="wrap strip-in">
+    <div class="field f-gate" id="fGate">
+      <span class="flabel" id="lblGate">Compuerta</span>
+      <div class="chips" id="chips" role="radiogroup" aria-labelledby="lblGate"></div>
+      <span class="dimnote" id="dimNote"></span>
+    </div>
+    <div class="field">
+      <span class="flabel" id="lblN">Entradas</span>
+      <div class="seg" id="segN" role="radiogroup" aria-labelledby="lblN">
+        <button type="button" role="radio" data-n="2">2</button><button type="button" role="radio" data-n="3">3</button><button type="button" role="radio" data-n="4">4</button>
+      </div>
+    </div>
+    <div class="field">
+      <span class="flabel" id="lblNt">Negación</span>
+      <div class="seg" id="segNt" role="radiogroup" aria-labelledby="lblNt">
+        <button type="button" role="radio" data-nt="bar" aria-label="Barra encima"><span class="ov">A</span></button><button type="button" role="radio" data-nt="prime" aria-label="Apóstrofo">A'</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<main class="wrap">
+
+  <section class="view" id="v-aprender" role="tabpanel" aria-labelledby="tab-aprender">
+    <div class="lgrid">
+      <div class="col">
+        <article class="panel">
+          <div class="gtitle"><h2 class="gname" id="lName"></h2><span class="ic-chip" id="lIC" title="Circuito integrado de referencia"></span></div>
+          <div id="lSym"></div>
+          <div class="readout" id="lRead" aria-live="polite"></div>
+          <div class="direct"><span class="dlabel">Expresión</span><span class="ex big" id="lDirect"></span></div>
+        </article>
+        <article class="panel">
+          <div class="ph"><h2>Tabla de verdad</h2><span class="meta" id="lTTmeta"></span></div>
+          <p class="hint">Toca una fila para poner esas entradas en el circuito. La columna m es el número de minterm.</p>
+          <div class="ttbox" id="lTT"></div>
+        </article>
+      </div>
+      <div class="col">
+        <article class="panel">
+          <div class="ph"><h2>Mapa de Karnaugh</h2>
+            <div class="seg txt" id="lTgt" role="radiogroup" aria-label="Qué agrupar"><button type="button" role="radio" data-t="sop">Grupos de 1 · SOP</button><button type="button" role="radio" data-t="pos">Grupos de 0 · POS</button></div>
+          </div>
+          <div class="kbox" id="lKmap"></div>
+          <ul class="legend" id="lLegend"></ul>
+        </article>
+        <article class="panel">
+          <div class="ph"><h2>Expresiones</h2></div>
+          <dl class="xl" id="lExprs"></dl>
+        </article>
+        <article class="panel">
+          <div class="ph"><h2>Simplificación paso a paso</h2></div>
+          <div id="lSteps"></div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="view" id="v-tabla" role="tabpanel" aria-labelledby="tab-tabla" hidden>
+    <div class="modes" id="ttModes" role="radiogroup" aria-label="Tipo de ejercicio"></div>
+    <div id="ttBody"></div>
+  </section>
+
+  <section class="view" id="v-mapa" role="tabpanel" aria-labelledby="tab-mapa" hidden>
+    <div class="exbar">
+      <label class="sel" for="kmSrc">Ejercicio
+        <select id="kmSrc"><option value="gate">Compuerta seleccionada</option><option value="rgate">Compuerta al azar</option><option value="func">Función al azar (Σm)</option><option value="expr">Expresión al azar</option></select>
+      </label>
+      <div class="seg txt" id="kmTgt" role="radiogroup" aria-label="Forma"><button type="button" role="radio" data-t="sop">SOP · grupos de 1</button><button type="button" role="radio" data-t="pos">POS · grupos de 0</button></div>
+      <button class="btn" type="button" id="kmNew">Nuevo ejercicio</button>
+      <div class="score" id="kmScore"></div>
+    </div>
+    <div class="pgrid">
+      <article class="panel prompt" id="kmPrompt"></article>
+      <article class="panel" id="kmWork"></article>
+    </div>
+  </section>
+
+  <section class="view" id="v-algebra" role="tabpanel" aria-labelledby="tab-algebra" hidden>
+    <div class="exbar">
+      <label class="sel" for="alSrc">Ejercicio
+        <select id="alSrc"><option value="gate">Compuerta seleccionada</option><option value="rgate">Compuerta al azar</option><option value="sum">Suma de minterms al azar</option><option value="expr">Expresión para simplificar</option></select>
+      </label>
+      <div class="seg txt" id="alTgt" role="radiogroup" aria-label="Forma"><button type="button" role="radio" data-t="sop">SOP mínima</button><button type="button" role="radio" data-t="pos">POS mínima</button></div>
+      <button class="btn" type="button" id="alNew">Nuevo ejercicio</button>
+      <div class="score" id="alScore"></div>
+    </div>
+    <div class="pgrid">
+      <article class="panel prompt" id="alPrompt"></article>
+      <article class="panel" id="alWork"></article>
+    </div>
+  </section>
+
+  <section class="view" id="v-examen" role="tabpanel" aria-labelledby="tab-examen" hidden>
+    <div class="qwrap">
+      <article class="panel qcard qstart" id="qStart">
+        <h2>Examen rápido</h2>
+        <p>Preguntas al azar de todo el temario: reconocer compuertas por su tabla, símbolo o mapa, calcular salidas, contar unos, grupos y elegir la forma mínima SOP o POS.</p>
+        <div class="qset">
+          <div class="field"><span class="flabel" id="lblQc">Preguntas</span><div class="seg" id="qCount" role="radiogroup" aria-labelledby="lblQc"><button type="button" role="radio" data-c="5">5</button><button type="button" role="radio" data-c="10">10</button><button type="button" role="radio" data-c="15">15</button></div></div>
+          <div class="field"><span class="flabel" id="lblQm">Entradas</span><div class="seg txt" id="qMix" role="radiogroup" aria-labelledby="lblQm"><button type="button" role="radio" data-x="0" id="qMixN">Solo 3</button><button type="button" role="radio" data-x="1">Mezclar 2, 3 y 4</button></div></div>
+        </div>
+        <p id="qBest" class="meta"></p>
+        <div class="actions"><button class="btn primary" type="button" data-q="start">Comenzar</button></div>
+      </article>
+      <article class="panel qcard" id="qRun" hidden></article>
+      <article class="panel qcard qend" id="qEnd" hidden></article>
+    </div>
+  </section>
+
+</main>
+
+<footer class="foot">
+  <div class="wrap foot-in">
+    <span>Cómo escribir: <code>A'</code> o <code>!A</code> niega · <code>AB</code> o <code>A·B</code> es AND · <code>+</code> es OR · <code>^</code> o <code>⊕</code> es XOR · paréntesis con <code>( )</code></span>
+    <span>Orden de variables: A es el bit más significativo (m5 = 101 → A=1, B=0, C=1).</span>
+  </div>
+</footer>
+</div>
+<script>
+/* ================= NÚCLEO LÓGICO (sin DOM) ================= */
+const VARS = ['A', 'B', 'C', 'D'];
+
+const GATES = [
+  { id: 'AND',  label: 'AND',      kind: 'and', bubble: false, ic: { 2: '74LS08', 3: '74LS11', 4: '74LS21' }, f: b => b.every(x => x === 1) },
+  { id: 'NAND', label: 'NAND',     kind: 'and', bubble: true,  ic: { 2: '74LS00', 3: '74LS10', 4: '74LS20' }, f: b => !b.every(x => x === 1) },
+  { id: 'OR',   label: 'OR',       kind: 'or',  bubble: false, ic: { 2: '74LS32', 3: 'CD4075', 4: 'CD4072' }, f: b => b.some(x => x === 1) },
+  { id: 'NOR',  label: 'NOR',      kind: 'or',  bubble: true,  ic: { 2: '74LS02', 3: '74LS27', 4: 'CD4002' }, f: b => !b.some(x => x === 1) },
+  { id: 'XOR',  label: 'XOR',      kind: 'xor', bubble: false, ic: { 2: '74LS86', 3: '74LS280', 4: '74LS280' }, f: b => b.reduce((a, x) => a ^ x, 0) === 1 },
+  { id: 'XNOR', label: 'XNOR',     kind: 'xor', bubble: true,  ic: { 2: '74LS266', 3: '74LS280', 4: '74LS280' }, f: b => b.reduce((a, x) => a ^ x, 0) === 0 },
+  { id: 'NOTA', label: 'NOT A',    kind: 'buf', bubble: true,  use: 0, ic: { 2: '74LS04', 3: '74LS04', 4: '74LS04' }, f: b => b[0] === 0 },
+  { id: 'NOTB', label: 'NOT B',    kind: 'buf', bubble: true,  use: 1, ic: { 2: '74LS04', 3: '74LS04', 4: '74LS04' }, f: b => b[1] === 0 },
+  { id: 'BUFA', label: 'Buffer A', kind: 'buf', bubble: false, use: 0, ic: { 2: '74LS07', 3: '74LS07', 4: '74LS07' }, f: b => b[0] === 1 },
+  { id: 'BUFB', label: 'Buffer B', kind: 'buf', bubble: false, use: 1, ic: { 2: '74LS07', 3: '74LS07', 4: '74LS07' }, f: b => b[1] === 1 },
+];
+const GATE = Object.fromEntries(GATES.map(g => [g.id, g]));
+const icOf = (g, n) => g.ic[n];
+
+const rnd = k => Math.floor(Math.random() * k);
+const pick = a => a[rnd(a.length)];
+function shuffle(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = rnd(i + 1); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+
+function bitsOf(m, n) { const b = []; for (let i = 0; i < n; i++) b.push((m >> (n - 1 - i)) & 1); return b; }
+const mstr = (m, n) => m.toString(2).padStart(n, '0');
+const truthOfGate = (g, n) => Array.from({ length: 1 << n }, (_, m) => g.f(bitsOf(m, n)) ? 1 : 0);
+
+function gateAST(g, n) {
+  const vs = Array.from({ length: n }, (_, i) => ({ t: 'var', i }));
+  switch (g.id) {
+    case 'AND': return { t: 'and', xs: vs };
+    case 'NAND': return { t: 'not', a: { t: 'and', xs: vs } };
+    case 'OR': return { t: 'or', xs: vs };
+    case 'NOR': return { t: 'not', a: { t: 'or', xs: vs } };
+    case 'XOR': return { t: 'xor', xs: vs };
+    case 'XNOR': return { t: 'not', a: { t: 'xor', xs: vs } };
+    case 'NOTA': return { t: 'not', a: vs[0] };
+    case 'NOTB': return { t: 'not', a: vs[1] };
+    case 'BUFA': return vs[0];
+    case 'BUFB': return vs[1];
+  }
+}
+
+function evalAST(a, m, n) {
+  switch (a.t) {
+    case 'var': return (m >> (n - 1 - a.i)) & 1;
+    case 'const': return a.v;
+    case 'not': return 1 - evalAST(a.a, m, n);
+    case 'and': return a.xs.every(x => evalAST(x, m, n) === 1) ? 1 : 0;
+    case 'or': return a.xs.some(x => evalAST(x, m, n) === 1) ? 1 : 0;
+    case 'xor': return a.xs.reduce((s, x) => s ^ evalAST(x, m, n), 0);
+  }
+}
+const truthOfAST = (a, n) => Array.from({ length: 1 << n }, (_, m) => evalAST(a, m, n));
+
+function flat(a) {
+  if (a.t === 'and' || a.t === 'or' || a.t === 'xor') {
+    const xs = [];
+    for (const x of a.xs) { const f = flat(x); if (f.t === a.t) xs.push(...f.xs); else xs.push(f); }
+    return { t: a.t, xs };
+  }
+  if (a.t === 'not') return { t: 'not', a: flat(a.a) };
+  return a;
+}
+function usedVars(a, s = new Set()) {
+  if (a.t === 'var') s.add(a.i); else if (a.t === 'not') usedVars(a.a, s); else if (a.xs) a.xs.forEach(x => usedVars(x, s));
+  return s;
+}
+function countLeaves(a) { if (a.t === 'var' || a.t === 'const') return 1; if (a.t === 'not') return countLeaves(a.a); return a.xs.reduce((s, x) => s + countLeaves(x), 0); }
+
+/* ---------- cubos (implicantes) ---------- */
+function cubeMins(c) { let r = [0]; for (const ch of c) { if (ch === '-') r = r.flatMap(v => [v * 2, v * 2 + 1]); else r = r.map(v => v * 2 + (ch === '1' ? 1 : 0)); } return r; }
+function lits(c) { let k = 0; for (const ch of c) if (ch !== '-') k++; return k; }
+function contains(p, c) { for (let i = 0; i < p.length; i++) if (p[i] !== '-' && p[i] !== c[i]) return false; return true; }
+function allCubes(n) { let r = ['']; for (let i = 0; i < n; i++) r = r.flatMap(s => [s + '0', s + '1', s + '-']); return r; }
+function primeImplicants(S, n) {
+  const imps = allCubes(n).filter(c => cubeMins(c).every(m => S.has(m)));
+  const set = new Set(imps);
+  return imps.filter(c => { for (let i = 0; i < n; i++) if (c[i] !== '-' && set.has(c.slice(0, i) + '-' + c.slice(i + 1))) return false; return true; });
+}
+const cubeKey = c => c.replace(/-/g, '2');
+const byCube = (a, b) => { const x = cubeKey(a), y = cubeKey(b); return x < y ? -1 : x > y ? 1 : 0; };
+function cubeFromSet(ms, n) {
+  if (!ms.length) return null;
+  let c = '';
+  for (let i = 0; i < n; i++) { const s = new Set(ms.map(m => (m >> (n - 1 - i)) & 1)); c += s.size === 2 ? '-' : String([...s][0]); }
+  const mins = cubeMins(c);
+  if (mins.length !== ms.length) return null;
+  const S = new Set(ms);
+  return mins.every(m => S.has(m)) ? c : null;
+}
+
+/* Minimización exacta (Quine–McCluskey + búsqueda de cobertura mínima).
+   target 'sop' agrupa los 1; 'pos' agrupa los 0 (implicantes de F negada). */
+const _minCache = new Map();
+function minimize(truth, n, target = 'sop') {
+  const key = target + n + truth.join('');
+  if (_minCache.has(key)) return _minCache.get(key);
+  const want = target === 'pos' ? 0 : 1;
+  const set = []; truth.forEach((v, m) => { if (v === want) set.push(m); });
+  const P = primeImplicants(new Set(set), n).map(c => ({ c, mins: cubeMins(c), l: lits(c) }));
+  let best = [], bestCost = set.length ? Infinity : 0;
+  const rec = (sel, cov, cost) => {
+    let tm = -1, opts = null;
+    for (const m of set) if (!cov.has(m)) { const o = P.filter(p => p.mins.includes(m)); if (!opts || o.length < opts.length) { opts = o; tm = m; } }
+    if (tm < 0) { if (cost < bestCost) { bestCost = cost; best = sel.slice(); } return; }
+    if (cost + 100 >= bestCost) return;
+    for (const p of opts) { const nc = new Set(cov); p.mins.forEach(x => nc.add(x)); sel.push(p); rec(sel, nc, cost + 100 + p.l); sel.pop(); }
+  };
+  if (set.length) rec([], new Set(), 0);
+  const res = { target: target === 'pos' ? 'pos' : 'sop', set, primes: P.map(p => p.c), cover: best.map(p => p.c).sort(byCube), cost: bestCost };
+  _minCache.set(key, res);
+  return res;
+}
+
+/* ---------- presentación de expresiones ---------- */
+function negHTML(x, nt, compound) { return nt === 'bar' ? `<span class="ov">${x}</span>` : (compound ? `(${x})'` : `${x}'`); }
+function litHTML(i, neg, nt) { return neg ? negHTML(VARS[i], nt, false) : VARS[i]; }
+function cubeProdHTML(c, nt) { let s = ''; for (let i = 0; i < c.length; i++) if (c[i] !== '-') s += litHTML(i, c[i] === '0', nt); return s || '1'; }
+/* factor suma a partir de un cubo de F negada: bit 1 -> variable negada, bit 0 -> variable directa */
+function cubeSumHTML(c, nt, paren = true) {
+  const ls = []; for (let i = 0; i < c.length; i++) if (c[i] !== '-') ls.push(litHTML(i, c[i] === '1', nt));
+  if (!ls.length) return '0';
+  return ls.length > 1 && paren ? '(' + ls.join(' + ') + ')' : ls.join(' + ');
+}
+const T = s => `<span class="t">${s}</span>`;
+const joinTerms = arr => arr.map(T).join(' + ');
+function sopFromCover(cover, nt, wrap) { if (!cover.length) return '0'; return cover.map((c, i) => (wrap || T)(cubeProdHTML(c, nt), i)).join(' + '); }
+function posFromCover(cover, nt, wrap) { if (!cover.length) return '1'; return cover.map((c, i) => (wrap || T)(cubeSumHTML(c, nt, cover.length > 1), i)).join(''); }
+const stripTags = s => s.replace(/<[^>]+>/g, '');
+
+const PREC = { or: 1, xor: 2, and: 3, not: 4, var: 5, const: 5 };
+function astHTML(a, nt, pp = 0) {
+  let s;
+  switch (a.t) {
+    case 'var': return VARS[a.i];
+    case 'const': return String(a.v);
+    case 'not': {
+      if (nt === 'bar') return `<span class="ov">${astHTML(a.a, nt, 0)}</span>`;
+      const simple = a.a.t === 'var' || a.a.t === 'const' || a.a.t === 'not';
+      return simple ? astHTML(a.a, nt, 4) + "'" : '(' + astHTML(a.a, nt, 0) + ")'";
+    }
+    case 'and': s = a.xs.map(x => astHTML(x, nt, 3)).join(''); break;
+    case 'or': s = a.xs.map(x => x.t === 'xor' ? '(' + astHTML(x, nt, 0) + ')' : astHTML(x, nt, 1)).join(' + '); break;
+    case 'xor': s = a.xs.map(x => astHTML(x, nt, 2)).join(' ⊕ '); break;
+  }
+  return PREC[a.t] < pp ? '(' + s + ')' : s;
+}
+
+/* ---------- lector de expresiones del alumno ---------- */
+function perr(msg) { const e = new Error(msg); e.user = true; return e; }
+function tokenize(src, n) {
+  const s = src.replace(/^\s*[fF]\s*(\([^)]*\))?\s*=\s*/, '');
+  const out = [];
+  for (const ch of s) {
+    if (/\s/.test(ch)) continue;
+    const vi = VARS.indexOf(ch.toUpperCase());
+    if (vi >= 0) {
+      if (vi >= n) throw perr(`Con ${n} entradas solo se usan las variables ${VARS.slice(0, n).join(', ')}.`);
+      out.push({ t: 'var', i: vi, s: ch }); continue;
+    }
+    if (ch === '0' || ch === '1') { out.push({ t: 'const', v: +ch, s: ch }); continue; }
+    if ('(['.includes(ch)) { out.push({ t: 'lp', s: ch }); continue; }
+    if (')]'.includes(ch)) { out.push({ t: 'rp', s: ch }); continue; }
+    if ("'’‘´`′̅̄".includes(ch)) { out.push({ t: 'post', s: "'" }); continue; }
+    if ('!~¬'.includes(ch)) { out.push({ t: 'not', s: ch }); continue; }
+    if ('+|∨'.includes(ch)) { out.push({ t: 'or', s: ch }); continue; }
+    if ('*·•&∧.×'.includes(ch)) { out.push({ t: 'and', s: ch }); continue; }
+    if ('^⊕'.includes(ch)) { out.push({ t: 'xor', s: ch }); continue; }
+    throw perr(`No reconozco el símbolo “${ch}”.`);
+  }
+  return out;
+}
+function parse(src, n) {
+  const tk = tokenize(src, n);
+  if (!tk.length) throw perr('Escribe una expresión.');
+  let i = 0;
+  const peek = () => tk[i];
+  const startsAtom = t => t && (t.t === 'var' || t.t === 'const' || t.t === 'lp' || t.t === 'not');
+  function pOr() { const xs = [pXor()]; while (peek() && peek().t === 'or') { i++; xs.push(pXor()); } return xs.length > 1 ? { t: 'or', xs } : xs[0]; }
+  function pXor() { const xs = [pAnd()]; while (peek() && peek().t === 'xor') { i++; xs.push(pAnd()); } return xs.length > 1 ? { t: 'xor', xs } : xs[0]; }
+  function pAnd() { const xs = [pUn()]; while (peek() && (peek().t === 'and' || startsAtom(peek()))) { if (peek().t === 'and') i++; xs.push(pUn()); } return xs.length > 1 ? { t: 'and', xs } : xs[0]; }
+  function pUn() { if (peek() && peek().t === 'not') { i++; return { t: 'not', a: pUn() }; } let a = pAtom(); while (peek() && peek().t === 'post') { i++; a = { t: 'not', a }; } return a; }
+  function pAtom() {
+    const t = tk[i++];
+    if (!t) throw perr('La expresión termina antes de tiempo: falta una variable después del último operador.');
+    if (t.t === 'var') return { t: 'var', i: t.i };
+    if (t.t === 'const') return { t: 'const', v: t.v };
+    if (t.t === 'lp') { const e = pOr(); const r = tk[i++]; if (!r || r.t !== 'rp') throw perr('Falta cerrar un paréntesis.'); return e; }
+    if (t.t === 'rp') throw perr('Hay un paréntesis de cierre de más o un paréntesis vacío.');
+    if (t.t === 'post') throw perr("El apóstrofo va después de una variable o de un paréntesis, por ejemplo A' o (AB)'.");
+    throw perr(`Falta una variable antes de “${t.s}”.`);
+  }
+  const e = pOr();
+  if (i < tk.length) { const t = tk[i]; throw perr(t.t === 'rp' ? 'Sobra un paréntesis de cierre.' : `No esperaba “${t.s}” en esa posición.`); }
+  return flat(e);
+}
+
+function litOf(x) { if (x.t === 'var') return { i: x.i, neg: false }; if (x.t === 'not' && x.a.t === 'var') return { i: x.a.i, neg: true }; return null; }
+/* Lee una expresión de dos niveles: SOP (outer or / inner and) o POS (outer and / inner or) */
+function twoLevel(ast, outer, inner) {
+  const a = flat(ast);
+  if (a.t === 'const') {
+    const neutral = outer === 'or' ? 0 : 1;              // 0 = suma vacía, 1 = producto vacío
+    return a.v === neutral ? [] : [[]];
+  }
+  const groups = a.t === outer ? a.xs : [a];
+  const out = [];
+  for (const g of groups) {
+    const fs = g.t === inner ? g.xs : [g];
+    const ls = [];
+    for (const f of fs) { const l = litOf(f); if (!l) return null; ls.push(l); }
+    out.push(ls);
+  }
+  return out;
+}
+function cubeFromLits(ls, n, kind) {
+  const c = Array(n).fill('-'); let contra = false, dup = false;
+  for (const { i, neg } of ls) {
+    const want = kind === 'prod' ? (neg ? '0' : '1') : (neg ? '1' : '0');
+    if (c[i] === '-') c[i] = want; else if (c[i] === want) dup = true; else contra = true;
+  }
+  return { c: c.join(''), contra, dup, nl: ls.length };
+}
+
+/* Revisa la respuesta escrita: equivalencia, forma pedida y si es mínima */
+function analyze(src, n, truth, target) {
+  let ast;
+  try { ast = parse(src, n); } catch (e) { if (e.user) return { level: 'error', msg: e.message }; throw e; }
+  const ut = truthOfAST(ast, n);
+  const opt = minimize(truth, n, target);
+  const missing = [], extra = [];
+  ut.forEach((v, m) => { if (truth[m] === 1 && v === 0) missing.push(m); else if (truth[m] === 0 && v === 1) extra.push(m); });
+  if (missing.length || extra.length) return { level: 'wrong', ast, missing, extra, opt };
+  const kind = target === 'sop' ? 'prod' : 'sum';
+  const tl = target === 'sop' ? twoLevel(ast, 'or', 'and') : twoLevel(ast, 'and', 'or');
+  if (!tl) return { level: 'form', ast, opt };
+  const cubes = tl.map(ls => cubeFromLits(ls, n, kind));
+  const cost = cubes.length * 100 + cubes.reduce((a, c) => a + c.nl, 0);
+  if (cost <= opt.cost) {
+    const same = cubes.map(c => c.c).sort(byCube).join() === opt.cover.join();
+    return { level: 'ok', ast, opt, cubes, same };
+  }
+  const hints = [];
+  const count = {}; cubes.forEach(c => { count[c.c] = (count[c.c] || 0) + 1; });
+  const told = new Set();
+  cubes.forEach(cb => {
+    if (cb.contra) { hints.push({ type: 'contra' }); return; }
+    if (cb.dup) hints.push({ type: 'dup', c: cb.c });
+    if (count[cb.c] > 1) { if (!told.has(cb.c)) { told.add(cb.c); hints.push({ type: 'repeat', c: cb.c }); } return; }
+    const bigger = opt.primes.filter(p => p !== cb.c && contains(p, cb.c)).sort((a, b) => lits(a) - lits(b));
+    if (bigger.length) hints.push({ type: 'grow', c: cb.c, to: bigger[0] });
+  });
+  cubes.forEach((cb, idx) => {
+    if (cb.contra || count[cb.c] > 1) return;
+    const others = new Set();
+    cubes.forEach((o, j) => { if (j !== idx && !o.contra) cubeMins(o.c).forEach(m => others.add(m)); });
+    if (cubeMins(cb.c).every(m => others.has(m))) hints.push({ type: 'redundant', c: cb.c });
+  });
+  return { level: 'notmin', ast, opt, cubes, cost, hints };
+}
+
+/* Revisa grupos dibujados en el mapa (cada grupo = lista de minterms) */
+function analyzeGroups(groups, n, truth, target) {
+  const opt = minimize(truth, n, target);
+  const T = new Set(opt.set);
+  const items = groups.map(g => {
+    const c = cubeFromSet(g, n);
+    const it = { c, issues: [] };
+    if (!c) { it.issues.push('shape'); return it; }
+    if (g.some(m => !T.has(m))) { it.issues.push('bad'); return it; }
+    const bigger = opt.primes.filter(p => p !== c && contains(p, c)).sort((a, b) => lits(a) - lits(b));
+    if (bigger.length) { it.issues.push('grow'); it.to = bigger[0]; }
+    return it;
+  });
+  const usable = it => it.c && !it.issues.includes('bad') && !it.issues.includes('shape');
+  const cov = new Set(); items.forEach(it => { if (usable(it)) cubeMins(it.c).forEach(m => cov.add(m)); });
+  const uncovered = opt.set.filter(m => !cov.has(m));
+  items.forEach((it, idx) => {
+    if (!usable(it)) return;
+    const others = new Set();
+    items.forEach((o, j) => { if (j !== idx && usable(o)) cubeMins(o.c).forEach(m => others.add(m)); });
+    if (cubeMins(it.c).every(m => others.has(m))) it.issues.push('redundant');
+  });
+  const allClean = items.every(it => it.c && !it.issues.length) && !uncovered.length;
+  const litsUser = items.reduce((a, it) => a + (it.c ? lits(it.c) : 0), 0);
+  const litsOpt = opt.cover.reduce((a, c) => a + lits(c), 0);
+  return { items, uncovered, opt, allClean, ok: allClean && groups.length === opt.cover.length && litsUser === litsOpt };
+}
+
+/* Simplificación algebraica paso a paso a partir de la cobertura mínima */
+function derivation(truth, n, target, nt) {
+  const opt = minimize(truth, n, target);
+  const Fl = target === 'sop' ? 'F' : negHTML('F', nt, false);
+  const mt = m => cubeProdHTML(mstr(m, n), nt);
+  const ov = x => negHTML(x, nt, false);
+  const pre = [];
+  if (target === 'pos') {
+    pre.push({ eq: `${Fl} = Σm(${opt.set.join(', ')})`, law: `Para la POS se agrupan los 0 de F. Esos 0 son los 1 de ${Fl} (F negada), así que primero simplificamos ${Fl}.` });
+  } else {
+    pre.push({ eq: `F = Σm(${opt.set.join(', ')})`, law: 'Suma canónica: un minterm por cada fila de la tabla donde F = 1.' });
+  }
+  pre.push({ eq: `${Fl} = ${joinTerms(opt.set.map(mt))}`, law: '' });
+  const uses = {}; opt.cover.forEach(c => cubeMins(c).forEach(m => { uses[m] = (uses[m] || 0) + 1; }));
+  const groups = opt.cover.map(c => {
+    const mins = cubeMins(c).sort((a, b) => a - b);
+    const free = []; for (let i = 0; i < n; i++) if (c[i] === '-') free.push(i);
+    const term = cubeProdHTML(c, nt);
+    const common = term === '1' ? '' : term;
+    const lines = [];
+    if (!free.length) {
+      lines.push({ eq: T(term), law: 'Celda sola: no tiene vecinos con el mismo valor, así que el término se queda completo.' });
+    } else {
+      const combos = mins.map(m => { const full = mstr(m, n); return cubeProdHTML([...full].map((ch, i) => c[i] === '-' ? ch : '-').join(''), nt); });
+      const pairs = free.map(i => `(${litHTML(i, true, nt)} + ${litHTML(i, false, nt)})`).join('');
+      lines.push({ eq: joinTerms(mins.map(mt)), law: '' });
+      if (free.length === 1) {
+        lines.push({ eq: `= ${common}${pairs}`, law: `Factor común (distributiva): XY + X${ov('Y')} = X(${ov('Y')} + Y).` });
+      } else {
+        lines.push({ eq: `= ${common}(${joinTerms(combos)})`, law: 'Factor común (distributiva): se saca lo que se repite en todos los términos.' });
+        lines.push({ eq: `= ${common}${pairs}`, law: `Lo que queda adentro son todas las combinaciones de ${free.map(i => VARS[i]).join(', ')}; por distributiva es un producto de sumas.` });
+      }
+      lines.push({ eq: common ? `= ${common}·1 = ${T(term)}` : '= 1', law: `Complemento: ${ov('X')} + X = 1. Identidad: X·1 = X.` });
+    }
+    return { c, mins, term, lines };
+  });
+  const shared = Object.keys(uses).filter(m => uses[m] > 1).map(Number).sort((a, b) => a - b);
+  const post = [];
+  if (shared.length) post.push({ eq: '', law: `${shared.length === 1 ? 'La celda' : 'Las celdas'} ${shared.map(m => 'm' + m).join(', ')} ${shared.length === 1 ? 'se usa' : 'se usan'} en más de un grupo. Es válido: por idempotencia X + X = X, repetir un minterm no cambia F.` });
+  const sop = sopFromCover(opt.cover, nt);
+  post.push({ eq: `${Fl} = ${sop}`, law: target === 'sop' ? 'Se suman los términos de todos los grupos: esta es la SOP mínima.' : `Esta es la forma mínima de ${Fl}.` });
+  if (target === 'pos') {
+    post.push({ eq: `F = ${negHTML(sop, nt, true)}`, law: 'Se niegan ambos lados para regresar a F.' });
+    post.push({ eq: `F = ${posFromCover(opt.cover, nt)}`, law: 'De Morgan: la negación de una suma es el producto de las negaciones, y la de un producto es la suma de las negaciones.' });
+  }
+  return { opt, pre, groups, post };
+}
+
+/* ---------- geometría del mapa de Karnaugh (código Gray) ---------- */
+function kLayout(n) {
+  const g2 = [0, 1], g4 = [0, 1, 3, 2];
+  if (n === 2) return { rows: 2, cols: 2, rowVars: 'A', colVars: 'B', rowCodes: g2, colCodes: g2, rb: 1, cb: 1 };
+  if (n === 3) return { rows: 2, cols: 4, rowVars: 'A', colVars: 'BC', rowCodes: g2, colCodes: g4, rb: 1, cb: 2 };
+  return { rows: 4, cols: 4, rowVars: 'AB', colVars: 'CD', rowCodes: g4, colCodes: g4, rb: 2, cb: 2 };
+}
+const cellMin = (L, r, c) => (L.rowCodes[r] << L.cb) | L.colCodes[c];
+function runs(idx) { const r = []; for (const i of idx) { if (r.length && r[r.length - 1][1] === i - 1) r[r.length - 1][1] = i; else r.push([i, i]); } return r; }
+function groupPieces(c, n) {
+  const L = kLayout(n);
+  const rp = c.slice(0, L.rb), cp = c.slice(L.rb);
+  const match = (code, bits, pat) => [...mstr(code, bits)].every((ch, i) => pat[i] === '-' || pat[i] === ch);
+  const rows = [...Array(L.rows).keys()].filter(r => match(L.rowCodes[r], L.rb, rp));
+  const cols = [...Array(L.cols).keys()].filter(k => match(L.colCodes[k], L.cb, cp));
+  const rr = runs(rows), cr = runs(cols);
+  const rw = rr.length === 2, cw = cr.length === 2;
+  const ps = [];
+  for (const [r0, r1] of rr) for (const [c0, c1] of cr)
+    ps.push({ r0, r1, c0, c1, oT: rw && r0 === 0, oB: rw && r1 === L.rows - 1, oL: cw && c0 === 0, oR: cw && c1 === L.cols - 1 });
+  return ps;
+}
+
+/* ---------- ejercicios aleatorios ---------- */
+function randomTruth(n) {
+  const N = 1 << n;
+  for (;;) {
+    const t = Array.from({ length: N }, () => Math.random() < 0.5 ? 1 : 0);
+    const s = t.reduce((a, b) => a + b, 0);
+    if (s >= (n > 2 ? 2 : 1) && s <= N - (n > 2 ? 2 : 1)) return t;
+  }
+}
+function randLeaf(n) { const v = { t: 'var', i: rnd(n) }; return Math.random() < 0.35 ? { t: 'not', a: v } : v; }
+function randNode(n, d) {
+  if (d <= 0) return randLeaf(n);
+  const op = pick(['and', 'or', 'and', 'or', 'xor', 'nand', 'nor']);
+  const k = Math.random() < 0.2 && n >= 3 ? 3 : 2;
+  const vs = shuffle([...Array(n).keys()]);
+  let xs = Array.from({ length: k }, (_, j) => {
+    if (Math.random() < 0.35 || d === 1 && Math.random() < 0.5) { const v = { t: 'var', i: vs[j % n] }; return Math.random() < 0.35 ? { t: 'not', a: v } : v; }
+    return randNode(n, d - 1);
+  });
+  const isLeaf = x => x.t === 'var' || x.t === 'not' && x.a.t === 'var';
+  const vi = x => x.t === 'var' ? x.i : x.a.i;
+  xs = [...xs.filter(isLeaf).sort((a, b) => vi(a) - vi(b)), ...xs.filter(x => !isLeaf(x))];
+  if (op === 'nand') return { t: 'not', a: { t: 'and', xs } };
+  if (op === 'nor') return { t: 'not', a: { t: 'or', xs } };
+  return { t: op, xs };
+}
+/* ordena las hojas de cada nodo por variable (A antes que B…) para que se lea natural */
+function tidy(a) {
+  if (a.t === 'not') return { t: 'not', a: tidy(a.a) };
+  if (!a.xs) return a;
+  const xs = a.xs.map(tidy);
+  const isLeaf = x => x.t === 'var' || x.t === 'not' && x.a.t === 'var';
+  const vi = x => x.t === 'var' ? x.i : x.a.i;
+  return { t: a.t, xs: [...xs.filter(isLeaf).sort((p, q) => vi(p) - vi(q)), ...xs.filter(x => !isLeaf(x))] };
+}
+/* descarta subexpresiones constantes o hermanos repetidos (p. ej. BB' o A + A) */
+function degenerate(a, n) {
+  if (a.t === 'var' || a.t === 'const') return false;
+  if (a.t === 'not') return degenerate(a.a, n);
+  const tts = a.xs.map(x => truthOfAST(x, n).join(''));
+  if (new Set(tts).size < tts.length) return true;
+  const own = truthOfAST(a, n); const s = own.reduce((x, y) => x + y, 0);
+  if (s === 0 || s === own.length) return true;
+  return a.xs.some(x => degenerate(x, n));
+}
+function randomExpr(n, simplify = false) {
+  const needVars = n === 2 ? 2 : 3;
+  for (let tries = 0; tries < 600; tries++) {
+    const a = tidy(flat(randNode(n, n === 4 ? 3 : 2)));
+    if (a.t === 'var' || a.t === 'not' && a.a.t === 'var') continue;
+    const leaves = countLeaves(a);
+    if (leaves < 3 || leaves > 7) continue;
+    if (usedVars(a).size < needVars) continue;
+    if (degenerate(a, n)) continue;
+    const t = truthOfAST(a, n), s = t.reduce((x, y) => x + y, 0);
+    if (s === 0 || s === t.length) continue;
+    if (simplify) {
+      const o = minimize(t, n, 'sop'); const tl = twoLevel(a, 'or', 'and');
+      if (tl && tl.length * 100 + tl.reduce((x, l) => x + l.length, 0) <= o.cost) continue;
+    }
+    return a;
+  }
+  return { t: 'or', xs: [{ t: 'and', xs: [{ t: 'var', i: 0 }, { t: 'not', a: { t: 'var', i: 1 } }] }, { t: 'and', xs: [{ t: 'var', i: 0 }, { t: 'var', i: n - 1 }] }] };
+}
+/* ================= TABLAS DE VERDAD · modos de práctica ================= */
+const TT_MODES = [
+  { id: 'llenar', name: 'Llenar F', desc: 'Compuerta, expresión, Σm o ΠM' },
+  { id: 'partes', name: 'Por columnas', desc: 'Expresión paso a paso' },
+  { id: 'circuito', name: 'Circuito', desc: 'Compuertas conectadas' },
+  { id: 'equiv', name: 'Equivalencia', desc: 'Comprueba leyes con la tabla' },
+  { id: 'errores', name: 'Encuentra errores', desc: 'Marca los valores mal' },
+  { id: 'cual', name: '¿Qué compuerta?', desc: 'Reconócela por su tabla' },
+  { id: 'rapida', name: 'Ronda rápida', desc: 'Contra reloj' }
+];
+const TT_IDS = TT_MODES.map(m => m.id);
+const TT_SRC = {
+  llenar: [['gate', 'Compuerta seleccionada'], ['rgate', 'Compuerta al azar'], ['expr', 'Expresión al azar'], ['sum', 'Función Σm (minterms)'], ['prod', 'Función ΠM (maxterms)']],
+  errores: [['gate', 'Compuerta seleccionada'], ['rgate', 'Compuerta al azar'], ['expr', 'Expresión al azar'], ['sum', 'Función Σm (minterms)']]
+};
+const CIRC = ['①', '②', '③', '④', '⑤', '⑥', '⑦', '⑧'];
+const OPNAME = { and: 'AND', or: 'OR', xor: 'XOR', not: 'NOT' };
+const G2IDS = ['AND', 'NAND', 'OR', 'NOR', 'XOR', 'XNOR'];
+
+/* Plantillas de leyes: p, q, r, s se cambian por variables reales. [[…]] en el texto se dibuja como expresión. */
+const LEYES = [
+  { v: 2, a: "(pq)'", b: "p' + q'", eq: true, law: 'Ley de De Morgan', why: 'La negación de un producto es la suma de las negaciones.' },
+  { v: 2, a: "(p + q)'", b: "p'q'", eq: true, law: 'Ley de De Morgan', why: 'La negación de una suma es el producto de las negaciones.' },
+  { v: 3, a: "(pqr)'", b: "p' + q' + r'", eq: true, law: 'De Morgan con 3 variables', why: 'Es la NAND de 3 entradas escrita como OR de las entradas negadas.' },
+  { v: 3, a: "(p + q + r)'", b: "p'q'r'", eq: true, law: 'De Morgan con 3 variables', why: 'Es la NOR de 3 entradas escrita como AND de las entradas negadas.' },
+  { v: 4, a: "(pqrs)'", b: "p' + q' + r' + s'", eq: true, law: 'De Morgan con 4 variables', why: 'NAND de 4 entradas = OR de las 4 entradas negadas.' },
+  { v: 2, a: "p + pq", b: "p", eq: true, law: 'Absorción', why: 'Si [[p]] = 1 los dos lados valen 1 y si [[p]] = 0 los dos valen 0. [[q]] no influye.' },
+  { v: 2, a: "p(p + q)", b: "p", eq: true, law: 'Absorción', why: 'Si [[p]] = 0 los dos lados valen 0 y si [[p]] = 1 los dos valen 1.' },
+  { v: 2, a: "p + p'q", b: "p + q", eq: true, law: 'Absorción del complemento', why: "Cuando [[p]] = 0, el término [[p'q]] se vuelve [[q]]; cuando [[p]] = 1 todo vale 1." },
+  { v: 2, a: "p(p' + q)", b: "pq", eq: true, law: 'Absorción del complemento', why: "Al distribuir, [[pp']] vale 0 y solo queda [[pq]]." },
+  { v: 3, a: "p(q + r)", b: "pq + pr", eq: true, law: 'Distributiva', why: 'El AND se distribuye sobre el OR, igual que la multiplicación sobre la suma.' },
+  { v: 3, a: "p + qr", b: "(p + q)(p + r)", eq: true, law: 'Distributiva del OR sobre el AND', why: 'En álgebra booleana la suma también se distribuye sobre el producto. Con números normales eso no pasa.' },
+  { v: 4, a: "(p + q)(r + s)", b: "pr + ps + qr + qs", eq: true, law: 'Distributiva aplicada dos veces', why: 'Cada término del primer paréntesis multiplica a cada término del segundo.' },
+  { v: 2, a: "p ^ q", b: "p'q + pq'", eq: true, law: 'Definición de XOR', why: "XOR vale 1 cuando las entradas son distintas: [[p'q]] o [[pq']]." },
+  { v: 2, a: "(p ^ q)'", b: "pq + p'q'", eq: true, law: 'Definición de XNOR', why: 'XNOR vale 1 cuando las entradas son iguales: las dos en 1 o las dos en 0.' },
+  { v: 2, a: "p ^ q", b: "(p + q)(p' + q')", eq: true, law: 'XOR como producto de sumas', why: 'Pide que al menos una valga 1 y al menos una valga 0, o sea, que sean distintas.' },
+  { v: 2, a: "p' ^ q", b: "(p ^ q)'", eq: true, law: 'Negar una entrada de XOR', why: 'Invertir una sola entrada de una XOR invierte su salida.' },
+  { v: 3, a: "(p ^ q) ^ r", b: "p ^ (q ^ r)", eq: true, law: 'Asociativa de XOR', why: 'XOR revisa si el número de unos es impar, sin importar cómo se agrupe.' },
+  { v: 3, a: "pq + p'r + qr", b: "pq + p'r", eq: true, law: 'Teorema del consenso', why: "El término [[qr]] sobra: cuando vale 1, [[pq]] o [[p'r]] ya vale 1." },
+  { v: 2, a: "pq + pq'", b: "p", eq: true, law: 'Combinación (adyacencia)', why: 'Es lo que hace un grupo de 2 celdas en el mapa K: [[q]] cambia y se elimina.' },
+  { v: 2, a: "(p + q)(p + q')", b: "p", eq: true, law: 'Combinación en forma POS', why: 'Es un grupo de 2 ceros en el mapa K: [[q]] cambia y se elimina.' },
+  { v: 1, a: "(pp)'", b: "p'", eq: true, law: 'NAND con las entradas unidas', why: 'Una NAND con sus entradas conectadas funciona como NOT. Por eso NAND es una compuerta universal.' },
+  { v: 1, a: "(p + p)'", b: "p'", eq: true, law: 'NOR con las entradas unidas', why: 'Una NOR con sus entradas conectadas también funciona como NOT.' },
+  { v: 2, a: "(pq)'", b: "p'q'", eq: false, why: "Error típico de De Morgan: al negar un producto, el AND se cambia por OR. Lo correcto es [[p' + q']]." },
+  { v: 2, a: "(p + q)'", b: "p' + q'", eq: false, why: "Error típico de De Morgan: al negar una suma, el OR se cambia por AND. Lo correcto es [[p'q']]." },
+  { v: 3, a: "(pqr)'", b: "p'q'r'", eq: false, why: "De Morgan cambia el AND por OR. Lo correcto es [[p' + q' + r']]." },
+  { v: 3, a: "p + qr", b: "(p + q)r", eq: false, why: 'El AND se hace antes que el OR: [[p + qr]] no es lo mismo que [[(p + q)r]].' },
+  { v: 3, a: "p(q + r)", b: "pq + r", eq: false, why: 'Al distribuir, [[p]] multiplica a los dos términos: [[pq + pr]].' },
+  { v: 2, a: "p ^ q", b: "pq + p'q'", eq: false, why: "[[pq + p'q']] es XNOR, la negación de XOR." },
+  { v: 2, a: "(p ^ q)'", b: "p' ^ q'", eq: false, why: "Negar las dos entradas de una XOR no cambia nada: [[p' ^ q']] es igual a [[p ^ q]]." },
+  { v: 2, a: "p + p'q", b: "q", eq: false, why: 'La absorción da [[p + q]], no solo [[q]].' },
+  { v: 2, a: "p + pq", b: "pq", eq: false, why: 'La absorción deja solo [[p]]: [[p + pq]] = [[p]].' },
+  { v: 3, a: "pq + p'r", b: "pq + r", eq: false, why: "No se puede quitar [[p']] de [[p'r]]: con [[p]] = 1, [[q]] = 0 y [[r]] = 1, [[pq + r]] vale 1 y [[pq + p'r]] vale 0." },
+  { v: 4, a: "pq + rs", b: "(p + r)(q + s)", eq: false, why: 'Al multiplicar [[(p + r)(q + s)]] salen [[pq + ps + qr + rs]]: sobran [[ps]] y [[qr]].' },
+  { v: 3, a: "(p + q)r'", b: "p + qr'", eq: false, why: "Falta multiplicar [[r']] también por [[p]]: [[(p + q)r']] = [[pr' + qr']]." },
+  { v: 2, a: "(p'q)'", b: "pq'", eq: false, why: "Con De Morgan, [[(p'q)']] = [[p + q']], no [[pq']]." }
+];
+
+/* ---------- generadores ---------- */
+function stepCols(ast) {
+  const cols = [], seen = new Map();
+  const key = a => stripTags(astHTML(a, 'prime'));
+  const walk = a => {
+    if (a.t === 'var' || a.t === 'const') return;
+    if (a.t === 'not') walk(a.a); else a.xs.forEach(walk);
+    const k = key(a);
+    if (!seen.has(k)) { seen.set(k, cols.length); cols.push(a); }
+  };
+  walk(ast);
+  const ref = x => x.t === 'var' ? VARS[x.i] : CIRC[seen.get(key(x))];
+  return cols.map(a => ({ a, args: a.t === 'not' ? [ref(a.a)] : a.xs.map(ref) }));
+}
+const capOf = c => c.a.t === 'not' ? `NOT ${c.args[0]}` : `${OPNAME[c.a.t]}(${c.args.join(', ')})`;
+function opRule(t, args) {
+  const L = listY(args);
+  if (t === 'not') return `es la negación de ${args[0]}: donde ${args[0]} vale 1 va 0, y donde vale 0 va 1.`;
+  if (t === 'and') return `vale 1 solo en las filas donde ${L} valen 1.`;
+  if (t === 'or') return `vale 1 en las filas donde al menos una de ${L} vale 1.`;
+  return `vale 1 en las filas donde un número impar de ${L} vale 1.`;
+}
+function gateRuleOn(g, ins) {
+  const L = listY(ins);
+  return {
+    AND: `vale 1 solo cuando ${L} valen 1`, NAND: `vale 0 solo cuando ${L} valen 1`,
+    OR: `vale 1 cuando al menos una de ${L} vale 1`, NOR: `vale 1 solo cuando ${L} valen 0`,
+    XOR: `vale 1 cuando ${L} son distintas`, XNOR: `vale 1 cuando ${L} son iguales`
+  }[g.id] || `es ${ins[0]} invertida`;
+}
+function gateOn(g, xs) {
+  switch (g.id) {
+    case 'AND': return { t: 'and', xs };
+    case 'NAND': return { t: 'not', a: { t: 'and', xs } };
+    case 'OR': return { t: 'or', xs };
+    case 'NOR': return { t: 'not', a: { t: 'or', xs } };
+    case 'XOR': return { t: 'xor', xs };
+    case 'XNOR': return { t: 'not', a: { t: 'xor', xs } };
+    default: return { t: 'not', a: xs[0] };
+  }
+}
+function evalCircuit(gates, n) {
+  const N = 1 << n, vals = {};
+  VARS.slice(0, n).forEach((v, i) => { vals[v] = Array.from({ length: N }, (_, m) => (m >> (n - 1 - i)) & 1); });
+  gates.forEach(gt => {
+    vals[gt.out] = Array.from({ length: N }, (_, m) => {
+      const b = gt.ins.map(s => vals[s][m]);
+      return gt.g.kind === 'buf' ? 1 - b[0] : (gt.g.f(b) ? 1 : 0);
+    });
+  });
+  return vals;
+}
+function makeCircuit(n) {
+  const rg = () => GATE[pick(G2IDS)], N = 1 << n, sum = a => a.reduce((x, y) => x + y, 0);
+  const topo = Math.random() < 0.5 ? 'par' : n === 2 ? 'inv' : 'cad';
+  for (let t = 0; t < 400; t++) {
+    let gates, inv = null;
+    if (topo === 'par') {
+      const ins = n === 2 ? [['A', 'B'], ['A', 'B']] : n === 3 ? [['A', 'B'], ['B', 'C']] : [['A', 'B'], ['C', 'D']];
+      gates = [{ g: rg(), ins: ins[0], out: 'X' }, { g: rg(), ins: ins[1], out: 'Y' }, { g: rg(), ins: ['X', 'Y'], out: 'F' }];
+    } else if (topo === 'cad') {
+      gates = [{ g: rg(), ins: ['A', 'B'], out: 'X' }, { g: rg(), ins: ['X', 'C'], out: n === 3 ? 'F' : 'Y' }];
+      if (n === 4) gates.push({ g: rg(), ins: ['Y', 'D'], out: 'F' });
+    } else {
+      inv = pick(['A', 'B']);
+      gates = [{ g: inv === 'A' ? GATE.NOTA : GATE.NOTB, ins: [inv], out: 'X' }, { g: rg(), ins: inv === 'A' ? ['X', 'B'] : ['A', 'X'], out: 'F' }];
+    }
+    const vals = evalCircuit(gates, n);
+    if (gates.some(gt => { const s = sum(vals[gt.out]); return s === 0 || s === N; })) continue;
+    if (topo === 'par' && n === 2) { const x = vals.X.join(''), y = vals.Y.join(''), ny = vals.Y.map(v => 1 - v).join(''); if (x === y || x === ny) continue; }
+    const f = vals.F.join('');
+    if (Object.keys(vals).some(k => k !== 'F' && vals[k].join('') === f)) continue;
+    return { n, topo, inv, gates, vals };
+  }
+}
+function circuitAST(c) {
+  const ast = {};
+  VARS.slice(0, c.n).forEach((v, i) => { ast[v] = { t: 'var', i }; });
+  c.gates.forEach(gt => { ast[gt.out] = gateOn(gt.g, gt.ins.map(s => ast[s])); });
+  return tidy(flat(ast.F));
+}
+function makeEquiv(n, last) {
+  const eq = Math.random() < 0.5;
+  const cands = LEYES.filter(t => t.eq === eq && t.v <= n && t !== last);
+  const w = cands.map(t => t.v === n ? 3 : t.v === n - 1 ? 2 : t.v === 1 ? 0.5 : 1);
+  let r = Math.random() * w.reduce((a, b) => a + b, 0), tpl = cands[0];
+  for (let i = 0; i < cands.length; i++) { r -= w[i]; if (r <= 0) { tpl = cands[i]; break; } }
+  const vs = shuffle([...Array(n).keys()]).slice(0, tpl.v).sort((a, b) => a - b);
+  const map = {}; ['p', 'q', 'r', 's'].forEach((ch, i) => { if (i < tpl.v) map[ch] = VARS[vs[i]]; });
+  const sub = s => s.replace(/[pqrs]/g, ch => map[ch]);
+  let a = parse(sub(tpl.a), n), b = parse(sub(tpl.b), n);
+  if (Math.random() < 0.4) [a, b] = [b, a];
+  return { tpl, sub, a, b, eq: tpl.eq };
+}
+function lawText(st) { return st.tpl.why.replace(/\[\[(.+?)\]\]/g, (_, x) => `<span class="ex inl">${astHTML(parse(st.sub(x), st.n), S.nt)}</span>`); }
+
+/* ---------- rejilla editable genérica ---------- */
+function gridInit(st, cols) { st.cols = cols; st.user = cols.map(() => Array(1 << st.n).fill(null)); st.marks = null; }
+function gridSet(st, ci, m, v) { st.user[ci][m] = v; if (st.marks) st.marks[ci][m] = ''; st.fb = null; }
+function gridCheck(st) {
+  let empty = 0;
+  st.user.forEach(col => col.forEach(v => { if (v == null) empty++; }));
+  if (empty) return { empty };
+  const wrong = st.cols.map(() => 0);
+  st.marks = st.cols.map((c, ci) => st.user[ci].map((v, m) => { const ok = v === c.truth[m]; if (!ok) wrong[ci]++; return ok ? 'ok' : 'bad'; }));
+  return { empty: 0, wrong, total: wrong.reduce((a, b) => a + b, 0) };
+}
+function viewCols(st) {
+  return st.cols.map(c => ({
+    ...c,
+    head: c.a ? astHTML(c.a, S.nt) : c.gt ? (S.circNames ? c.gt.g.label : '') : '',
+    cap: c.args ? capOf(c) : c.gt ? `(${c.gt.ins.join(', ')})` : ''
+  }));
+}
+function gridHTML(n, cols, st, o = {}) {
+  const N = 1 << n;
+  let h = `<table class="tt grid"><thead><tr><th class="mi" scope="col">m</th>${VARS.slice(0, n).map(v => `<th scope="col">${v}</th>`).join('')}`;
+  cols.forEach((c, ci) => { h += `<th scope="col" class="xc${ci === 0 ? ' sep' : ''}"><span class="cl">${c.label}</span>${c.head ? `<span class="ce">${c.head}</span>` : ''}${c.cap ? `<span class="co">${c.cap}</span>` : ''}</th>`; });
+  h += '</tr></thead><tbody>';
+  for (let m = 0; m < N; m++) {
+    const rc = [o.cur === m ? 'cur' : '', o.rowCls ? o.rowCls[m] : '', o.rowClick ? 'click' : ''].filter(Boolean).join(' ');
+    h += `<tr data-m="${m}"${rc ? ` class="${rc}"` : ''}><td class="mi">${m}</td>${bitsOf(m, n).map(x => `<td>${x}</td>`).join('')}`;
+    cols.forEach((c, ci) => {
+      const u = st.user[ci][m], mk = st.marks ? st.marks[ci][m] || '' : '';
+      h += `<td class="edit${ci === 0 ? ' sep' : ''}"><button type="button" class="fbtn ${u == null ? 'q' : 'v' + u} ${mk}" data-c="${ci}" data-m="${m}" aria-label="${c.aria} en la fila ${m}: ${u == null ? 'vacía' : u}">${u == null ? '?' : u}</button></td>`;
+    });
+    h += '</tr>';
+  }
+  return h + '</tbody></table>';
+}
+function filledMeta(st) {
+  const tot = (1 << st.n) * st.cols.length, f = st.user.reduce((a, col) => a + col.filter(v => v != null).length, 0);
+  return `${f} de ${tot} llenas`;
+}
+
+/* ---------- dibujo de circuitos ---------- */
+function gGeom(g, x0, cy, s) {
+  const { body, outX, inX } = gateBody(g);
+  let b = body, ox = outX;
+  if (g.bubble) { b += `<circle cx="${outX + 8}" cy="90" r="8"/>`; ox = outX + 16; }
+  const X = bx => +(x0 + (bx - 110) * s).toFixed(1), Y = by => +(cy + (by - 90) * s).toFixed(1);
+  return {
+    svg: `<g class="body" transform="translate(${(x0 - 110 * s).toFixed(1)} ${(cy - 90 * s).toFixed(1)}) scale(${s})">${b}</g>`,
+    pin: k => g.kind === 'buf' ? { x: X(132), y: cy } : { x: X(inX(k ? 115 : 65)), y: Y(k ? 115 : 65) },
+    out: { x: X(ox), y: cy },
+    mid: X(((g.kind === 'buf' ? 132 : 118) + ox) / 2), bot: Y(g.kind === 'buf' ? 128 : 140)
+  };
+}
+function circuitSVG(c, row, showInner, names) {
+  const s = 0.6, n = c.n, G = c.gates, geo = [], wires = [], dots = [], wl = [];
+  let inY, out, H;
+  const put = (k, x0, cy) => { geo[k] = gGeom(G[k].g, x0, cy, s); };
+  const seg = (sig, d) => wires.push({ sig, d });
+  if (c.topo === 'par') {
+    put(0, 200, 60); put(1, 200, 170); put(2, 380, 115);
+    const [g1, g2, g3] = geo;
+    if (n === 4) {
+      inY = { A: 45, B: 75, C: 155, D: 185 };
+      seg('A', `M44 45H${g1.pin(0).x}`); seg('B', `M44 75H${g1.pin(1).x}`); seg('C', `M44 155H${g2.pin(0).x}`); seg('D', `M44 185H${g2.pin(1).x}`);
+    } else if (n === 3) {
+      inY = { A: 45, B: 115, C: 185 };
+      seg('A', `M44 45H${g1.pin(0).x}`);
+      seg('B', `M44 115H120M120 115V75H${g1.pin(1).x}M120 115V155H${g2.pin(0).x}`); dots.push([120, 115, 'B']);
+      seg('C', `M44 185H${g2.pin(1).x}`);
+    } else {
+      inY = { A: 45, B: 185 };
+      seg('A', `M44 45H${g1.pin(0).x}M100 45V155H124A6 6 0 0 1 136 155H${g2.pin(0).x}`); dots.push([100, 45, 'A']);
+      seg('B', `M44 185H${g2.pin(1).x}M130 185V75H${g1.pin(1).x}`); dots.push([130, 185, 'B']);
+    }
+    seg('X', `M${g1.out.x} 60H330V${g3.pin(0).y}H${g3.pin(0).x}`);
+    seg('Y', `M${g2.out.x} 170H330V${g3.pin(1).y}H${g3.pin(1).x}`);
+    wl.push(['X', g1.out.x + 10, 52], ['Y', g2.out.x + 10, 162]);
+    seg('F', `M${g3.out.x} 115H500`); out = [514, 115]; H = 225;
+  } else if (c.topo === 'cad' && n === 3) {
+    put(0, 190, 70); put(1, 370, 110);
+    const [g1, g2] = geo;
+    inY = { A: 55, B: 85, C: 125 };
+    seg('A', `M44 55H${g1.pin(0).x}`); seg('B', `M44 85H${g1.pin(1).x}`);
+    seg('X', `M${g1.out.x} 70H320V${g2.pin(0).y}H${g2.pin(0).x}`);
+    seg('C', `M44 125H${g2.pin(1).x}`);
+    wl.push(['X', g1.out.x + 10, 62]);
+    seg('F', `M${g2.out.x} 110H500`); out = [514, 110]; H = 168;
+  } else if (c.topo === 'cad') {
+    put(0, 150, 55); put(1, 285, 105); put(2, 420, 155);
+    const [g1, g2, g3] = geo;
+    inY = { A: 40, B: 70, C: 120, D: 170 };
+    seg('A', `M44 40H${g1.pin(0).x}`); seg('B', `M44 70H${g1.pin(1).x}`);
+    seg('X', `M${g1.out.x} 55H255V${g2.pin(0).y}H${g2.pin(0).x}`);
+    seg('C', `M44 120H${g2.pin(1).x}`);
+    seg('Y', `M${g2.out.x} 105H390V${g3.pin(0).y}H${g3.pin(0).x}`);
+    seg('D', `M44 170H${g3.pin(1).x}`);
+    wl.push(['X', g1.out.x + 8, 47], ['Y', g2.out.x + 8, 97]);
+    seg('F', `M${g3.out.x} 155H518`); out = [532, 155]; H = 205;
+  } else {
+    const yv = c.inv === 'A' ? 55 : 145;
+    put(0, 150, yv); put(1, 340, 100);
+    const [gn, g2] = geo;
+    inY = { A: 55, B: 145 };
+    if (c.inv === 'A') {
+      seg('A', `M44 55H${gn.pin(0).x}`);
+      seg('X', `M${gn.out.x} 55H300V${g2.pin(0).y}H${g2.pin(0).x}`);
+      seg('B', `M44 145H300V${g2.pin(1).y}H${g2.pin(1).x}`);
+    } else {
+      seg('A', `M44 55H300V${g2.pin(0).y}H${g2.pin(0).x}`);
+      seg('B', `M44 145H${gn.pin(0).x}`);
+      seg('X', `M${gn.out.x} 145H300V${g2.pin(1).y}H${g2.pin(1).x}`);
+    }
+    wl.push(['X', gn.out.x + 10, yv - 8]);
+    seg('F', `M${g2.out.x} 100H500`); out = [514, 100]; H = 192;
+  }
+  const isIn = sg => VARS.includes(sg);
+  const val = sg => row == null ? null : (isIn(sg) || showInner ? c.vals[sg][row] : null);
+  const col = v => v == null ? 'var(--ink)' : v ? 'var(--hi)' : 'var(--muted)';
+  let h = `<svg class="circ" viewBox="0 0 560 ${H}" role="img" aria-label="Circuito de ${G.length} compuertas con ${n} entradas">`;
+  h += wires.map(w => `<path class="w" style="stroke:${col(val(w.sig))}" d="${w.d}"/>`).join('');
+  h += dots.map(([x, y, sg]) => `<circle cx="${x}" cy="${y}" r="3.6" style="fill:${col(val(sg))}"/>`).join('');
+  h += geo.map(g => g.svg).join('');
+  if (names) h += geo.map((g, k) => `<text class="gn" x="${g.mid}" y="${g.bot + 13}" text-anchor="middle">${G[k].g.label}</text>`).join('');
+  Object.entries(inY).forEach(([v, y]) => {
+    h += `<text class="lbl" x="14" y="${y + 5}" text-anchor="middle">${v}</text>`;
+    if (row != null) h += `<text class="val" x="31" y="${y + 4}" text-anchor="middle">${c.vals[v][row]}</text>`;
+  });
+  wl.forEach(([sg, x, y]) => { const v = val(sg); h += `<text class="wl" x="${x}" y="${y}">${sg}${v != null ? ' = ' + v : ''}</text>`; });
+  const fv = val('F');
+  h += `<text class="lbl" x="${out[0]}" y="${out[1] - 17}" text-anchor="middle">F</text><circle class="led${fv === 1 ? ' on' : ''}${fv == null ? ' q' : ''}" cx="${out[0]}" cy="${out[1]}" r="11"/><text class="ledt${fv === 1 ? ' on' : ''}" x="${out[0]}" y="${out[1] + 4.5}" text-anchor="middle">${fv == null ? '?' : fv}</text>`;
+  return h + '</svg>';
+}
+function circBox(st) {
+  const done = st.solved || st.revealed, b = bitsOf(st.cur, st.n);
+  return `<div class="circbox">${circuitSVG(st.c, st.cur, done, S.circNames)}</div><div class="readout"><span>Fila m${st.cur}: ${b.map((x, i) => `${VARS[i]} = <b>${x}</b>`).join(' · ')}</span>${done ? `<span>→ <b class="${st.c.vals.F[st.cur] ? 'fo' : ''}">F = ${st.c.vals.F[st.cur]}</b></span>` : ''}</div>`;
+}
+
+/* ---------- creación de ejercicios ---------- */
+function ttNew(mode) {
+  const n = S.n, prev = S.tm[mode];
+  let st;
+  if (mode === 'llenar') {
+    const p = makeProblem(S.ttSrc.llenar, n, false);
+    st = { n, p }; gridInit(st, [{ label: 'F', aria: 'F', truth: p.truth }]);
+  } else if (mode === 'partes') {
+    const max = n === 2 ? 4 : n === 3 ? 5 : 6;
+    let ast, sc;
+    for (let i = 0; i < 400; i++) { ast = randomExpr(n); sc = stepCols(ast); if (sc.length >= 3 && sc.length <= max) break; }
+    const L = sc.length - 1;
+    st = { n, ast };
+    gridInit(st, sc.map((c, i) => ({ label: i === L ? 'F' : CIRC[i], aria: i === L ? 'F' : 'Columna ' + (i + 1), a: c.a, args: c.args, truth: truthOfAST(c.a, n) })));
+  } else if (mode === 'circuito') {
+    const c = makeCircuit(n);
+    st = { n, c, cur: 0 }; gridInit(st, c.gates.map(gt => ({ label: gt.out, aria: gt.out, gt, truth: c.vals[gt.out] })));
+  } else if (mode === 'equiv') {
+    const e = makeEquiv(n, prev && prev.tpl);
+    st = { n, ...e };
+    gridInit(st, [{ label: 'E₁', aria: 'E1', a: e.a, truth: truthOfAST(e.a, n) }, { label: 'E₂', aria: 'E2', a: e.b, truth: truthOfAST(e.b, n) }]);
+  } else if (mode === 'errores') {
+    const p = makeProblem(S.ttSrc.errores, n, false), N = 1 << n;
+    const k = n === 2 ? 1 : n === 3 ? 1 + rnd(2) : 2 + rnd(2);
+    const bad = shuffle([...Array(N).keys()]).slice(0, k), shown = p.truth.slice();
+    bad.forEach(m => { shown[m] = 1 - shown[m]; });
+    st = { n, p, shown, bad: new Set(bad), flags: new Set(), marks: {}, done: false };
+  } else if (mode === 'cual') {
+    let g; do { g = pick(GATES).id; } while (prev && g === prev.g);
+    const order = [...Array(1 << n).keys()];
+    st = { n, g, order: S.ttShuffle ? shuffle(order) : order, chosen: null };
+  }
+  Object.assign(st, { mode, fb: null, counted: false, revealed: false, solved: false });
+  S.tm[mode] = st;
+  return st;
+}
+function ttNeedNew(mode) {
+  const st = S.tm[mode];
+  if (!st || st.n !== S.n) return true;
+  if (mode === 'llenar' || mode === 'errores') return st.p.src !== S.ttSrc[mode] || (st.p.src === 'gate' && st.p.gate !== S.gate);
+  return false;
+}
+function ttUsesGate() { const m = S.ttMode; return (m === 'llenar' || m === 'errores') && S.ttSrc[m] === 'gate'; }
+
+/* ---------- revisión ---------- */
+function minLine(F, n) { const o = minimize(F, n, 'sop'); return `Con esta tabla, la SOP mínima es <span class="ex inl">F = ${sopFromCover(o.cover, S.nt)}</span>.`; }
+function ttCount(st, ok, mode) { if (st.counted) return; st.counted = true; scoreEvent('tabla', ok && !st.revealed, ok && !st.revealed ? mode : null); }
+function gridCheckFb(st) {
+  const r = gridCheck(st), N = 1 << st.n;
+  if (r.empty) { st.fb = { kind: 'warn', html: `Te ${pl(r.empty, 'falta', 'faltan')} <b>${r.empty}</b> ${pl(r.empty, 'casilla', 'casillas')} por llenar.` }; return; }
+  if (st.mode === 'equiv') {
+    st.fb = r.total ? { kind: 'bad', html: `<b>Hay ${r.total} ${pl(r.total, 'casilla mal', 'casillas mal')}.</b> Corrige las marcadas en rojo.` }
+      : { kind: 'ok', html: '<b>Las dos columnas están bien.</b> Ahora compáralas fila por fila y elige tu conclusión.' };
+    return;
+  }
+  if (!r.total) {
+    const F = st.cols[st.cols.length - 1].truth, k = onesOf(F).length;
+    const head = st.mode === 'llenar' ? '¡Tabla correcta!' : st.mode === 'partes' ? '¡Todas las columnas están bien!' : '¡Circuito resuelto!';
+    const tail = st.mode === 'llenar' ? (st.p.gate ? gateRule(GATE[st.p.gate]) : '') : minLine(F, st.n);
+    st.solved = true;
+    st.fb = { kind: 'ok', html: `<b>${head}</b> F vale 1 en ${k} de ${N} filas. ${tail}` };
+    ttCount(st, true, st.mode);
+    return;
+  }
+  if (st.mode === 'llenar') { st.fb = { kind: 'bad', html: `Llevas <b>${N - r.total}</b> de ${N} bien. Corrige las casillas marcadas.` }; return; }
+  const name = c => st.mode === 'partes' ? `Columna ${c.label}` : c.label;
+  const lines = st.cols.map((c, ci) => r.wrong[ci] ? `<li>${name(c)}: ${r.wrong[ci]} ${pl(r.wrong[ci], 'error', 'errores')}</li>` : '').join('');
+  const fc = st.cols[r.wrong.findIndex(x => x > 0)];
+  const tip = st.mode === 'partes' ? `la columna ${fc.label} ${opRule(fc.a.t, fc.args)}`
+    : `${fc.label} sale de la compuerta ${fc.gt.g.label} con ${pl(fc.gt.ins.length, 'entrada', 'entradas')} ${listY(fc.gt.ins)}: ${gateRuleOn(fc.gt.g, fc.gt.ins)}.`;
+  st.fb = { kind: 'bad', html: `<b>Hay ${r.total} ${pl(r.total, 'casilla mal', 'casillas mal')}.</b><ul>${lines}</ul><p>Pista: ${tip}</p>` };
+}
+function gridShow(st) {
+  st.user = st.cols.map(c => c.truth.slice()); st.marks = null; st.revealed = true; st.solved = true;
+  if (st.mode === 'equiv') { st.showDiff = !st.eq; st.done = true; st.fb = { kind: 'warn', html: `Esta es la respuesta: ${st.eq ? 'sí' : 'no'} son equivalentes. ${equivExplain(st, true)}` }; }
+  else st.fb = { kind: 'warn', html: `Esta es la respuesta. ${st.mode === 'llenar' && st.p.gate ? gateRule(GATE[st.p.gate]) : 'Compárala con lo que tenías para ver dónde estaba el error.'}` };
+  ttCount(st, false);
+}
+function equivExplain(st, ok) {
+  if (st.eq) return `${ok ? '' : 'Tus dos columnas quedaron iguales en todas las filas, así que sí son equivalentes. '}<b>${st.tpl.law}.</b> ${lawText(st)}`;
+  const d = st.cols[0].truth.map((v, m) => v !== st.cols[1].truth[m] ? m : -1).filter(m => m >= 0);
+  return `${ok ? 'Las columnas' : 'Las columnas no son iguales:'} difieren en ${d.length} ${pl(d.length, 'fila', 'filas')} (${d.map(m => 'm' + m).join(', ')}), marcadas en rojo. ${lawText(st)}`;
+}
+function equivVerdict(st, yes) {
+  if (st.done) return;
+  const r = gridCheck(st);
+  if (r.empty) { st.fb = { kind: 'warn', html: 'Primero llena las dos columnas: la conclusión sale de compararlas.' }; return; }
+  if (r.total) { st.fb = { kind: 'bad', html: `Antes de decidir, corrige ${pl(r.total, 'la casilla marcada', 'las ' + r.total + ' casillas marcadas')} en rojo.` }; return; }
+  const ok = yes === st.eq;
+  st.showDiff = !st.eq; st.done = true; st.solved = true;
+  st.fb = { kind: ok ? 'ok' : 'bad', html: (ok ? `<b>¡Correcto! ${st.eq ? 'Sí son equivalentes.' : 'No son equivalentes.'}</b> ` : '<b>Revisa tu conclusión.</b> ') + equivExplain(st, ok) };
+  ttCount(st, ok, 'equiv');
+}
+function errCheck(st) {
+  if (!st.flags.size) { st.fb = { kind: 'warn', html: 'Todavía no marcas ningún valor. Toca los valores de F que estén mal.' }; return; }
+  const fl = [...st.flags], found = fl.filter(m => st.bad.has(m)), wrongF = fl.filter(m => !st.bad.has(m)), miss = [...st.bad].filter(m => !st.flags.has(m));
+  st.marks = {};
+  found.forEach(m => { st.marks[m] = 'ok'; });
+  wrongF.forEach(m => { st.marks[m] = 'bad'; st.flags.delete(m); });
+  if (!wrongF.length && !miss.length) {
+    st.done = true; st.solved = true;
+    st.fb = { kind: 'ok', html: `<b>¡Encontraste ${found.length === 1 ? 'el error' : `los ${found.length} errores`}!</b> Ya aparecen corregidos en la tabla.${st.p.gate ? ' ' + gateRule(GATE[st.p.gate]) : ''}` };
+    ttCount(st, true, 'errores');
+    return;
+  }
+  const li = [];
+  if (found.length) li.push(`Encontraste ${found.length} (con borde verde).`);
+  if (wrongF.length) li.push(`${pl(wrongF.length, 'El valor con borde rojo sí estaba bien', 'Los valores con borde rojo sí estaban bien')} (${wrongF.sort((a, b) => a - b).map(m => 'm' + m).join(', ')}); ya ${pl(wrongF.length, 'lo', 'los')} desmarqué.`);
+  if (miss.length) li.push(`Te ${pl(miss.length, 'falta', 'faltan')} ${miss.length} por encontrar.`);
+  st.fb = { kind: 'warn', html: `<b>Todavía no.</b><ul>${li.map(x => `<li>${x}</li>`).join('')}</ul>` };
+}
+function errShow(st) {
+  st.flags = new Set(st.bad); st.marks = {}; st.done = true; st.revealed = true; st.solved = true;
+  st.fb = { kind: 'warn', html: `Los errores estaban en ${[...st.bad].sort((a, b) => a - b).map(m => 'm' + m).join(', ')}. Ya aparecen corregidos.` };
+  ttCount(st, false);
+}
+function cualAnswer(id) {
+  const st = S.tm.cual; if (!st || st.chosen != null) return;
+  st.chosen = id;
+  const g = GATE[st.g], c = GATE[id], ok = id === st.g;
+  if (ok) st.fb = { kind: 'ok', html: `<b>¡Correcto, es ${g.label}!</b> ${gateRule(g)}` };
+  else {
+    const t = truthOfGate(g, st.n), tc = truthOfGate(c, st.n), d = t.findIndex((v, m) => v !== tc[m]);
+    st.fb = { kind: 'bad', html: `<b>No, es ${g.label}.</b> ${gateRule(g)} Con ${c.label}, la fila m${d} (${bitsOf(d, st.n).map((b, i) => VARS[i] + '=' + b).join(' ')}) daría ${tc[d]}, y en esta tabla vale ${t[d]}.` };
+  }
+  scoreEvent('tabla', ok, ok ? 'cual' : null);
+  rBody(); focusSel('#ttBody [data-act="next"]');
+}
+function cualNext() { ttNew('cual'); rBody(); focusSel('#ttBody .gch'); }
+
+/* ---------- ronda rápida ---------- */
+function rpCard(n, lastKey) {
+  for (;;) { const g = pick(GATES), m = rnd(1 << n), key = g.id + m; if (key !== lastKey) return { g: g.id, m, key, ans: g.f(bitsOf(m, n)) ? 1 : 0 }; }
+}
+function stopRapida(abort) {
+  clearInterval(S.rpTimer); S.rpTimer = null;
+  const st = S.tm.rapida;
+  if (abort && st && st.phase === 'run') st.phase = 'start';
+}
+function startRapida() {
+  const st = S.tm.rapida;
+  Object.assign(st, { phase: 'run', dur: S.rpDur, n: S.n, ok: 0, bad: 0, mistakes: [], last: null, t0: Date.now(), newRec: false });
+  st.card = rpCard(st.n, null);
+  clearInterval(S.rpTimer); S.rpTimer = setInterval(tickRapida, 100);
+}
+function tickRapida() {
+  const st = S.tm.rapida;
+  if (!st || st.phase !== 'run') { stopRapida(); return; }
+  const left = st.dur - (Date.now() - st.t0) / 1000;
+  if (left <= 0) { endRapida(); return; }
+  const bar = $('#rpBar'), t = $('#rpLeft');
+  if (bar) bar.style.width = (left / st.dur * 100) + '%';
+  if (t) t.textContent = Math.ceil(left) + ' s';
+}
+function endRapida() {
+  stopRapida();
+  const st = S.tm.rapida, key = `${st.dur}-${st.n}`, best = S.stats.rapida[key], pts = Math.max(0, st.ok - st.bad);
+  st.phase = 'end'; st.pts = pts; st.prev = best;
+  st.newRec = st.ok > 0 && (best == null || pts > best);
+  if (st.newRec) { S.stats.rapida[key] = pts; store.set('stats', S.stats); }
+  if (S.tab === 'tabla' && S.ttMode === 'rapida') rBody();
+}
+function answerRapida(v) {
+  const st = S.tm.rapida; if (!st || st.phase !== 'run') return;
+  const c = st.card, ok = v === c.ans;
+  if (ok) st.ok++; else { st.bad++; st.mistakes.push({ ...c, v }); }
+  st.last = { ...c, v, ok };
+  st.card = rpCard(st.n, c.key);
+  rBody();
+}
+function renderRapida() {
+  let st = S.tm.rapida;
+  if (!st) st = S.tm.rapida = { mode: 'rapida', phase: 'start' };
+  if (st.phase === 'run' && st.n !== S.n) stopRapida(true);
+  const key = `${S.rpDur}-${S.n}`, rec = S.stats.rapida[key];
+  let h;
+  if (st.phase === 'start') {
+    h = `<article class="panel rp"><div class="kicker">Ronda rápida</div><h2 class="ptitle">¿Cuánto vale F?</h2>
+      <p class="hint">Aparece una compuerta de ${S.n} entradas con sus valores y respondes 0 o 1 lo más rápido que puedas. Con teclado usa las teclas 0 y 1. Los puntos son aciertos menos errores, así que adivinar no conviene.</p>
+      <div class="qset"><div class="field"><span class="flabel" id="lblRd">Duración</span><div class="seg" role="radiogroup" aria-labelledby="lblRd">${[30, 60, 120].map(d => `<button type="button" role="radio" data-dur="${d}" aria-checked="${S.rpDur === d}">${d} s</button>`).join('')}</div></div></div>
+      <p class="meta">${rec != null ? `Récord con ${S.rpDur} s y ${S.n} entradas: ${rec} ${pl(rec, 'punto', 'puntos')}` : `Todavía no tienes récord con ${S.rpDur} s y ${S.n} entradas.`}</p>
+      <div class="actions"><button class="btn primary" type="button" data-act="rp-start">Comenzar</button></div></article>`;
+  } else if (st.phase === 'run') {
+    const left = Math.max(0, st.dur - (Date.now() - st.t0) / 1000), g = GATE[st.card.g], bits = bitsOf(st.card.m, st.n);
+    const L = st.last;
+    const lastTxt = L ? `${L.ok ? '✓' : '✗'} ${GATE[L.g].label}(${bitsOf(L.m, st.n).join(', ')}) = ${L.ans}${L.ok ? '' : ` · respondiste ${L.v}`}` : 'Responde con los botones o con las teclas 0 y 1.';
+    h = `<article class="panel rp"><div class="rphead"><span>Aciertos <b>${st.ok}</b> · Errores <b>${st.bad}</b></span><span id="rpLeft">${Math.ceil(left)} s</span></div>
+      <div class="rptime"><span id="rpBar" style="width:${left / st.dur * 100}%"></span></div>
+      <div class="rpcard"><div class="rpgate">${g.label}</div>${gateSVG(g, st.n, { inputs: bits, out: 'hide', ic: false })}
+      <div class="rpbtns"><button type="button" class="rpbtn" data-act="rp-ans" data-v="0" aria-label="F vale 0">0</button><button type="button" class="rpbtn" data-act="rp-ans" data-v="1" aria-label="F vale 1">1</button></div>
+      <div class="rplast ${L ? (L.ok ? 'ok' : 'bad') : ''}" aria-live="polite">${lastTxt}</div></div></article>`;
+  } else {
+    const seen = new Set(), miss = st.mistakes.filter(x => { if (seen.has(x.key)) return false; seen.add(x.key); return true; }).slice(0, 8);
+    h = `<article class="panel rp"><div class="kicker">Ronda rápida · ${st.dur} s · ${st.n} entradas</div><div class="bigscore">${st.pts}<small> ${pl(st.pts, 'punto', 'puntos')}</small></div>
+      <p class="hint" style="margin-top:8px">${st.ok} ${pl(st.ok, 'acierto', 'aciertos')} y ${st.bad} ${pl(st.bad, 'error', 'errores')}.${st.newRec ? ' <b>¡Nuevo récord!</b>' : st.prev != null ? ` Tu récord es ${st.prev}.` : ''}</p>
+      ${miss.length ? `<ul class="review">${miss.map(x => { const g = GATE[x.g]; return `<li><div class="rq">${g.label} con ${bitsOf(x.m, st.n).map((b, i) => `${VARS[i]} = ${b}`).join(', ')}: respondiste ${x.v}, era ${x.ans}.</div><div class="ra">${gateRule(g)}</div></li>`; }).join('')}</ul>` : ''}
+      <div class="actions"><button class="btn primary" type="button" data-act="rp-start">Otra ronda</button><button class="btn" type="button" data-act="rp-menu">Cambiar duración</button></div></article>`;
+  }
+  $('#ttBody').innerHTML = h;
+}
+
+/* ---------- vistas por modo ---------- */
+const GRID_HINT = 'Toca una casilla para cambiarla entre 1 y 0. Con teclado escribe 0 o 1 y pasas sola a la siguiente fila; las flechas te mueven entre casillas.';
+const NEW_BTN = '<button class="btn" type="button" data-act="new">Nuevo ejercicio</button>';
+const ttBar = (inner = '') => `<div class="exbar">${inner}<div class="score">${scoreHTML('tabla')}</div></div>`;
+const fbHTML = f => `<div class="fb${f ? ' ' + f.kind : ''}" role="status" aria-live="polite">${f ? f.html : ''}</div>`;
+const gridActions = () => '<div class="actions"><button class="btn primary" type="button" data-act="check">Revisar</button><button class="btn" type="button" data-act="clear">Borrar todo</button><button class="btn ghost" type="button" data-act="show">Ver respuesta</button></div>';
+function srcSelect(mode) { return `<label class="sel" for="ttSrc">Ejercicio <select id="ttSrc" data-mode="${mode}">${TT_SRC[mode].map(([v, l]) => `<option value="${v}"${S.ttSrc[mode] === v ? ' selected' : ''}>${l}</option>`).join('')}</select></label>`; }
+
+function rLlenar() {
+  const st = S.tm.llenar;
+  $('#ttBody').innerHTML = ttBar(srcSelect('llenar') + NEW_BTN) + `<div class="pgrid"><article class="panel prompt">${promptHTML(st.p, 'tabla')}</article>
+    <article class="panel"><div class="ph"><h2>Llena la columna F</h2><span class="meta">${filledMeta(st)}</span></div><p class="hint">${GRID_HINT}</p>
+    <div class="ttbox">${gridHTML(st.n, viewCols(st), st)}</div>${gridActions()}${fbHTML(st.fb)}</article></div>`;
+}
+function rPartes() {
+  const st = S.tm.partes;
+  $('#ttBody').innerHTML = ttBar(NEW_BTN) + `<div class="stack"><article class="panel prompt"><div class="kicker">Expresión · ${st.n} variables · ${st.cols.length} columnas</div><div class="ex big">F = ${astHTML(st.ast, S.nt)}</div>
+    <p class="hint">Resuelve la tabla por partes: cada columna se calcula con las anteriores. Debajo de cada encabezado dice qué operación es y con qué columnas se hace; la última columna es F.</p></article>
+    <article class="panel"><div class="ph"><h2>Llena todas las columnas</h2><span class="meta">${filledMeta(st)}</span></div><p class="hint">${GRID_HINT}</p>
+    <div class="ttbox">${gridHTML(st.n, viewCols(st), st)}</div>${gridActions()}${fbHTML(st.fb)}</article></div>`;
+}
+function rCircuito() {
+  const st = S.tm.circuito, outs = st.c.gates.map(g => g.out), inter = outs.slice(0, -1), done = st.solved || st.revealed;
+  const interTxt = inter.length > 1 ? `${listY(inter)} son señales intermedias: cada una sale de una compuerta y entra a otra.` : `${inter[0]} es una señal intermedia: sale de una compuerta y entra a otra.`;
+  $('#ttBody').innerHTML = ttBar(NEW_BTN + `<button class="btn" type="button" data-act="names" aria-pressed="${S.circNames}">${S.circNames ? 'Ocultar nombres' : 'Mostrar nombres'}</button>`) +
+    `<div class="pgrid"><article class="panel prompt"><div class="kicker">Circuito · ${st.n} entradas · ${st.c.gates.length} compuertas</div><div id="ttCirc">${circBox(st)}</div>
+    <p class="hint">${interTxt} Toca una fila de la tabla para ver esas entradas en los cables.${S.circNames ? '' : ' Reconoce cada compuerta por su forma, o pulsa Mostrar nombres.'}</p>
+    ${done ? `<div class="direct"><span class="dlabel">Expresión del circuito</span><span class="ex">F = ${astHTML(circuitAST(st.c), S.nt)}</span></div>` : ''}</article>
+    <article class="panel"><div class="ph"><h2>Llena ${listY(outs)}</h2><span class="meta">${filledMeta(st)}</span></div><p class="hint">${GRID_HINT}</p>
+    <div class="ttbox">${gridHTML(st.n, viewCols(st), st, { cur: st.cur, rowClick: true })}</div>${gridActions()}${fbHTML(st.fb)}</article></div>`;
+}
+function rEquiv() {
+  const st = S.tm.equiv;
+  const diff = st.showDiff ? st.cols[0].truth.map((v, m) => v !== st.cols[1].truth[m] ? 'diff' : '') : null;
+  $('#ttBody').innerHTML = ttBar(NEW_BTN) + `<div class="pgrid"><article class="panel prompt"><div class="kicker">¿Son equivalentes? · ${st.n} variables</div>
+    <div class="ex big">E₁ = ${astHTML(st.a, S.nt)}</div><div class="ex big">E₂ = ${astHTML(st.b, S.nt)}</div>
+    <p class="hint">Dos expresiones son equivalentes si dan el mismo valor en todas las filas. Llena las dos columnas, compáralas y elige tu conclusión.</p></article>
+    <article class="panel"><div class="ph"><h2>Llena E₁ y E₂</h2><span class="meta">${filledMeta(st)}</span></div><p class="hint">${GRID_HINT}</p>
+    <div class="ttbox">${gridHTML(st.n, viewCols(st), st, { rowCls: diff })}</div>
+    <div class="actions"><button class="btn" type="button" data-act="check">Revisar columnas</button><button class="btn" type="button" data-act="clear">Borrar todo</button><button class="btn ghost" type="button" data-act="show">Ver respuesta</button></div>
+    <div class="verdict"><span class="flabel">Tu conclusión</span><button class="btn primary" type="button" data-act="v-yes" ${st.done ? 'disabled' : ''}>Sí son equivalentes</button><button class="btn primary" type="button" data-act="v-no" ${st.done ? 'disabled' : ''}>No son equivalentes</button></div>
+    ${fbHTML(st.fb)}</article></div>`;
+}
+function rErrores() {
+  const st = S.tm.errores, n = st.n, N = 1 << n;
+  let rows = '';
+  for (let m = 0; m < N; m++) {
+    const fl = st.flags.has(m), mk = st.marks[m] || '', fix = st.done && st.bad.has(m), v = st.shown[m];
+    rows += `<tr data-m="${m}"><td class="mi">${m}</td>${bitsOf(m, n).map(x => `<td>${x}</td>`).join('')}<td class="edit sep"><button type="button" class="fbtn ${fix ? 'fixed' : 'v' + v}${fl && !fix ? ' flag' : ''} ${mk}" data-m="${m}" aria-pressed="${fl}" ${st.done ? 'disabled' : ''} aria-label="F en la fila ${m} vale ${v}${fl ? ', marcada como error' : ''}">${fix ? `${v}→${1 - v}` : v}</button></td></tr>`;
+  }
+  $('#ttBody').innerHTML = ttBar(srcSelect('errores') + NEW_BTN) + `<div class="pgrid"><article class="panel prompt">${promptHTML(st.p, 'tabla')}</article>
+    <article class="panel"><div class="ph"><h2>Encuentra los errores</h2><span class="meta">${st.flags.size} ${pl(st.flags.size, 'marcado', 'marcados')}</span></div>
+    <p class="hint">Esta tabla tiene al menos un error en la columna F. Revisa fila por fila y toca cada valor que esté mal para tacharlo; tócalo otra vez para desmarcarlo.</p>
+    <div class="ttbox"><table class="tt"><thead><tr><th class="mi" scope="col">m</th>${VARS.slice(0, n).map(v => `<th scope="col">${v}</th>`).join('')}<th class="xc sep" scope="col"><span class="cl">F</span></th></tr></thead><tbody>${rows}</tbody></table></div>
+    <div class="actions"><button class="btn primary" type="button" data-act="check">Revisar</button><button class="btn" type="button" data-act="clear">Quitar marcas</button><button class="btn ghost" type="button" data-act="show">Ver respuesta</button></div>${fbHTML(st.fb)}</article></div>`;
+}
+function rCual() {
+  const st = S.tm.cual, n = st.n, truth = truthOfGate(GATE[st.g], n);
+  let rows = '';
+  for (const m of st.order) rows += `<tr><td class="mi">${m}</td>${bitsOf(m, n).map(x => `<td>${x}</td>`).join('')}<td class="fcol${truth[m] ? ' on' : ''}">${truth[m]}</td></tr>`;
+  const ch = GATES.map(x => {
+    let cls = 'gch';
+    if (st.chosen != null) cls += x.id === st.g ? ' ok' : x.id === st.chosen ? ' bad' : ' dimmed';
+    return `<button type="button" class="${cls}" data-g="${x.id}" ${st.chosen != null ? 'disabled' : ''}>${gateMini(x)}<span>${x.label}</span></button>`;
+  }).join('');
+  $('#ttBody').innerHTML = ttBar(`<div class="seg txt" role="radiogroup" aria-label="Orden de las filas"><button type="button" role="radio" data-ord="0" aria-checked="${!S.ttShuffle}">Filas en orden</button><button type="button" role="radio" data-ord="1" aria-checked="${S.ttShuffle}">Filas en desorden</button></div>`) +
+    `<div class="pgrid"><article class="panel"><div class="ph"><h2>Tabla de verdad</h2><span class="meta">${n} entradas${S.ttShuffle ? ' · filas revueltas' : ''}</span></div>
+    <div class="ttbox"><table class="tt"><thead><tr><th class="mi" scope="col">m</th>${VARS.slice(0, n).map(v => `<th scope="col">${v}</th>`).join('')}<th class="fcol" scope="col">F</th></tr></thead><tbody>${rows}</tbody></table></div></article>
+    <article class="panel"><div class="ph"><h2>¿Qué compuerta es?</h2></div><p class="hint">Cuenta cuántos 1 hay y fíjate en qué filas están. Si F solo sigue a una entrada, es NOT o Buffer.</p>
+    <div class="gchoices">${ch}</div>${fbHTML(st.fb)}${st.chosen != null ? '<div class="actions"><button class="btn primary" type="button" data-act="next">Siguiente</button><span class="hint" style="margin:0;align-self:center">o pulsa Enter</span></div>' : ''}</article></div>`;
+}
+
+function renderModes() {
+  $('#ttModes').innerHTML = TT_MODES.map(md => {
+    const c = S.stats.modos[md.id] || 0;
+    return `<button type="button" role="radio" class="mode" data-mode="${md.id}" aria-checked="${md.id === S.ttMode}"><span class="mn">${md.name}</span><span class="md">${md.desc}</span>${c ? `<span class="mc">✓ ${c} ${pl(c, 'resuelto', 'resueltos')}</span>` : ''}</button>`;
+  }).join('');
+}
+function rBody() {
+  const mode = S.ttMode;
+  if (mode === 'rapida') renderRapida();
+  else {
+    if (ttNeedNew(mode)) ttNew(mode);
+    ({ llenar: rLlenar, partes: rPartes, circuito: rCircuito, equiv: rEquiv, errores: rErrores, cual: rCual })[mode]();
+  }
+  renderModes();
+}
+function renderTablaTab() { if (S.rpTimer && S.ttMode !== 'rapida') stopRapida(true); rBody(); }
+function setCircRow(m) {
+  const st = S.tm.circuito; if (!st || st.cur === m) return;
+  st.cur = m;
+  const box = $('#ttCirc'); if (box) box.innerHTML = circBox(st);
+  $$('#ttBody tr[data-m]').forEach(tr => tr.classList.toggle('cur', +tr.dataset.m === m));
+}
+
+/* ---------- eventos ---------- */
+function ttClick(e) {
+  const mode = S.ttMode, st = S.tm[mode], act = e.target.closest('[data-act]'), a = act && act.dataset.act;
+  if (mode === 'rapida') {
+    const d = e.target.closest('[data-dur]');
+    if (d) { S.rpDur = +d.dataset.dur; store.set('rpDur', S.rpDur); rBody(); focusSel(`#ttBody [data-dur="${S.rpDur}"]`); return; }
+    if (a === 'rp-start') { startRapida(); rBody(); }
+    else if (a === 'rp-ans') answerRapida(+act.dataset.v);
+    else if (a === 'rp-menu') { S.tm.rapida.phase = 'start'; rBody(); }
+    return;
+  }
+  if (!st) return;
+  if (a === 'new') { ttNew(mode); rBody(); return; }
+  if (mode === 'cual') {
+    const o = e.target.closest('[data-ord]');
+    if (o) {
+      S.ttShuffle = o.dataset.ord === '1'; store.set('ttShuffle', S.ttShuffle);
+      if (st.chosen == null) { const ord = [...Array(1 << st.n).keys()]; st.order = S.ttShuffle ? shuffle(ord) : ord; }
+      rBody(); return;
+    }
+    const g = e.target.closest('.gch[data-g]'); if (g) { cualAnswer(g.dataset.g); return; }
+    if (a === 'next') cualNext();
+    return;
+  }
+  if (mode === 'errores') {
+    const b = e.target.closest('.fbtn[data-m]');
+    if (b) {
+      if (st.done) return;
+      const m = +b.dataset.m;
+      if (st.flags.has(m)) st.flags.delete(m); else st.flags.add(m);
+      delete st.marks[m]; st.fb = null;
+      rBody(); focusSel(`#ttBody .fbtn[data-m="${m}"]`); return;
+    }
+    if (a === 'check') errCheck(st);
+    else if (a === 'clear') { st.flags.clear(); st.marks = {}; st.fb = null; }
+    else if (a === 'show') errShow(st);
+    else return;
+    rBody(); return;
+  }
+  const b = e.target.closest('.fbtn[data-c]');
+  if (b) {
+    const ci = +b.dataset.c, m = +b.dataset.m;
+    gridSet(st, ci, m, st.user[ci][m] === 1 ? 0 : 1);
+    if (mode === 'circuito') st.cur = m;
+    rBody(); focusSel(`#ttBody .fbtn[data-c="${ci}"][data-m="${m}"]`); return;
+  }
+  if (mode === 'circuito' && !act) { const tr = e.target.closest('tr[data-m]'); if (tr) setCircRow(+tr.dataset.m); return; }
+  if (a === 'names') { S.circNames = !S.circNames; store.set('circNames', S.circNames); }
+  else if (a === 'check') gridCheckFb(st);
+  else if (a === 'clear') { gridInit(st, st.cols); st.fb = null; st.showDiff = false; }
+  else if (a === 'show') gridShow(st);
+  else if (a === 'v-yes' || a === 'v-no') equivVerdict(st, a === 'v-yes');
+  else return;
+  rBody();
+  if (a === 'names') focusSel('#ttBody [data-act="names"]');
+}
+function ttGridKeys(e) {
+  const b = e.target.closest('.fbtn[data-c]'); if (!b) return;
+  const st = S.tm[S.ttMode]; if (!st || !st.cols) return;
+  const ci = +b.dataset.c, m = +b.dataset.m, N = 1 << st.n, C = st.cols.length;
+  const go = (c, r) => focusSel(`#ttBody .fbtn[data-c="${c}"][data-m="${r}"]`);
+  if (e.key === '0' || e.key === '1') {
+    e.preventDefault(); gridSet(st, ci, m, +e.key); rBody();
+    if (m + 1 < N) go(ci, m + 1); else if (ci + 1 < C) go(ci + 1, 0); else go(ci, m);
+  } else if (e.key === 'Backspace' || e.key === 'Delete') {
+    e.preventDefault(); gridSet(st, ci, m, null); rBody(); go(ci, m);
+  } else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+    e.preventDefault(); go(ci, Math.max(0, Math.min(N - 1, m + (e.key === 'ArrowDown' ? 1 : -1))));
+  } else if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+    e.preventDefault(); go(Math.max(0, Math.min(C - 1, ci + (e.key === 'ArrowRight' ? 1 : -1))), m);
+  }
+}
+function initTabla() {
+  $('#ttModes').addEventListener('click', e => {
+    const b = e.target.closest('[data-mode]'); if (!b) return;
+    S.ttMode = b.dataset.mode; store.set('ttMode', S.ttMode);
+    render(); focusSel(`#ttModes [data-mode="${S.ttMode}"]`);
+  });
+  const B = $('#ttBody');
+  B.addEventListener('change', e => { if (e.target.id === 'ttSrc') { S.ttSrc[e.target.dataset.mode] = e.target.value; store.set('ttSrc', S.ttSrc); render(); focusSel('#ttSrc'); } });
+  B.addEventListener('click', ttClick);
+  B.addEventListener('keydown', ttGridKeys);
+  B.addEventListener('focusin', e => { if (S.ttMode !== 'circuito') return; const b = e.target.closest('.fbtn[data-m]'); if (b) setCircRow(+b.dataset.m); });
+  document.addEventListener('keydown', e => {
+    if (S.tab !== 'tabla' || e.altKey || e.ctrlKey || e.metaKey) return;
+    if (S.ttMode === 'rapida') {
+      const st = S.tm.rapida;
+      if (st && st.phase === 'run' && (e.key === '0' || e.key === '1')) { e.preventDefault(); answerRapida(+e.key); }
+    } else if (S.ttMode === 'cual' && e.key === 'Enter') {
+      const st = S.tm.cual;
+      if (st && st.chosen != null && !e.target.closest('button,select,input')) { e.preventDefault(); cualNext(); }
+    }
+  });
+}
+/* ================= INTERFAZ ================= */
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const pl = (k, a, b) => k === 1 ? a : b;
+const store = {
+  get(k, d) { try { const v = localStorage.getItem('taller-compuertas.' + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem('taller-compuertas.' + k, JSON.stringify(v)); } catch (e) { } }
+};
+const TABS = ['aprender', 'tabla', 'mapa', 'algebra', 'examen'];
+const SRC_OK = { mapa: ['gate', 'rgate', 'func', 'expr'], algebra: ['gate', 'rgate', 'sum', 'expr'] };
+const STATE_KEY = { mapa: 'km', algebra: 'alg' };
+function loadStats() {
+  const out = { tabla: { ok: 0, tot: 0, racha: 0 }, mapa: { ok: 0, tot: 0, racha: 0 }, algebra: { ok: 0, tot: 0, racha: 0 }, examen: { mejor: null, veces: 0 }, rapida: {}, modos: {} };
+  const s = store.get('stats', null);
+  if (s && typeof s === 'object') for (const k in out) if (s[k] && typeof s[k] === 'object') Object.assign(out[k], s[k]);
+  return out;
+}
+const S = {
+  tab: 'aprender', gate: 'NAND', n: 3, nt: 'bar', inputs: [1, 0, 1, 1], lTgt: 'sop',
+  src: { mapa: 'gate', algebra: 'gate' }, tgt: { mapa: 'sop', algebra: 'sop' },
+  ttMode: 'llenar', ttSrc: { llenar: 'gate', errores: 'gate' }, tm: {}, ttShuffle: false, circNames: false, rpDur: 60, rpTimer: null,
+  stats: loadStats(), km: null, alg: null,
+  quiz: { phase: 'start', count: 10, mix: false }, lastRand: null
+};
+(() => {
+  const g = store.get('gate', 'NAND'); if (GATE[g]) S.gate = g;
+  const n = store.get('n', 3); if ([2, 3, 4].includes(n)) S.n = n;
+  if (store.get('nt', 'bar') === 'prime') S.nt = 'prime';
+  const src = store.get('src', null);
+  if (src) for (const k in S.src) if (SRC_OK[k].includes(src[k])) S.src[k] = src[k];
+  const tm = store.get('ttMode', 'llenar'); if (TT_IDS.includes(tm)) S.ttMode = tm;
+  const ts = store.get('ttSrc', null);
+  if (ts) for (const k in S.ttSrc) if (TT_SRC[k].some(o => o[0] === ts[k])) S.ttSrc[k] = ts[k];
+  S.ttShuffle = store.get('ttShuffle', false) === true;
+  S.circNames = store.get('circNames', false) === true;
+  const d = store.get('rpDur', 60); if ([30, 60, 120].includes(d)) S.rpDur = d;
+})();
+
+/* ---------- piezas gráficas ---------- */
+function gateBody(g) {
+  let body, outX, inX;
+  if (g.kind === 'and') { body = '<path d="M120 40H170A50 50 0 0 1 170 140H120Z"/>'; outX = 220; inX = () => 120; }
+  else if (g.kind === 'or') { body = '<path d="M115 40Q165 40 220 90Q165 140 115 140Q140 90 115 40Z"/>'; outX = 220; inX = y => { const t = (y - 40) / 100; return 115 + 50 * t * (1 - t); }; }
+  else if (g.kind === 'xor') { body = '<path d="M125 40Q172 40 222 90Q172 140 125 140Q150 90 125 40Z"/><path class="nf" d="M113 40Q138 90 113 140"/>'; outX = 222; inX = y => { const t = (y - 40) / 100; return 113 + 50 * t * (1 - t); }; }
+  else { body = '<path d="M132 52L204 90L132 128Z"/>'; outX = 204; inX = () => 132; }
+  return { body, outX, inX };
+}
+function gateMini(g) {
+  let { body, outX, inX } = gateBody(g);
+  if (g.bubble) { body += `<circle cx="${outX + 9}" cy="90" r="9"/>`; outX += 18; }
+  const ins = g.kind === 'buf' ? '<path class="w" d="M98 90H132"/>' : `<path class="w" d="M98 65H${inX(65).toFixed(1)}M98 115H${inX(115).toFixed(1)}"/>`;
+  return `<svg class="mini" viewBox="94 34 152 112" aria-hidden="true">${ins}<path class="w o" d="M${outX} 90H244"/>${body}</svg>`;
+}
+/* símbolo completo: interruptores, cables con nivel lógico y LED de salida */
+function gateSVG(g, n, o = {}) {
+  const { inputs = null, interactive = false, out = 'show', ic = true } = o;
+  const ys = Array.from({ length: n }, (_, i) => 45 + (i + 0.5) * 90 / n);
+  let { body, outX, inX } = gateBody(g);
+  if (g.bubble) { body += `<circle cx="${outX + 6}" cy="90" r="6"/>`; outX += 12; }
+  const val = inputs ? (g.f(inputs.slice(0, n)) ? 1 : 0) : null;
+  const W = v => v == null ? 'var(--ink)' : (v ? 'var(--hi)' : 'var(--muted)');
+  let wires = '', sw = '';
+  ys.forEach((y, i) => {
+    const v = inputs ? inputs[i] : null;
+    const used = g.kind !== 'buf' || g.use === i;
+    if (interactive) {
+      sw += `<g class="sw${v ? ' on' : ''}" data-var="${i}" tabindex="0" role="switch" aria-checked="${v ? 'true' : 'false'}" aria-label="Entrada ${VARS[i]}"><rect class="sw-hit" x="1" y="${y - 12}" width="60" height="24" rx="4"/><text class="lbl" x="11" y="${y + 5}" text-anchor="middle">${VARS[i]}</text><rect class="sw-track" x="23" y="${y - 8}" width="30" height="16" rx="8"/><circle class="sw-knob" cx="${v ? 45 : 31}" cy="${y}" r="5.5"/></g>`;
+    } else if (inputs) {
+      sw += `<text class="lbl" x="14" y="${y + 5}" text-anchor="middle">${VARS[i]}</text><text class="val" x="40" y="${y + 5}" text-anchor="middle">${v}</text>`;
+    } else {
+      sw += `<text class="lbl" x="38" y="${y + 5}" text-anchor="middle">${VARS[i]}</text>`;
+    }
+    if (used) {
+      const d = g.kind === 'buf' ? `M56 ${y}H100V90H132` : `M56 ${y}H${inX(y).toFixed(1)}`;
+      wires += `<path class="w" style="stroke:${W(v)}" d="${d}"/>`;
+    } else {
+      wires += `<path class="w nc" d="M56 ${y}H84"/><circle class="ncdot" cx="88" cy="${y}" r="3.5"/>`;
+    }
+  });
+  const ov = inputs && out === 'show' ? val : null;
+  wires += `<path class="w" style="stroke:${W(ov)}" d="M${outX} 90H283"/>`;
+  let led;
+  if (out === 'hide') led = '<circle class="led q" cx="296" cy="90" r="13"/><text class="ledt" x="296" y="95" text-anchor="middle">?</text>';
+  else if (inputs) led = `<circle class="led${val ? ' on' : ''}" cx="296" cy="90" r="13"/><text class="ledt${val ? ' on' : ''}" x="296" y="95" text-anchor="middle">${val}</text>`;
+  else led = '<circle class="led" cx="290" cy="90" r="5"/>';
+  const lab = `<text class="lbl" x="${inputs || out === 'hide' ? 296 : 290}" y="${inputs || out === 'hide' ? 67 : 76}" text-anchor="middle">F</text>`;
+  const icT = ic ? `<text class="ic" x="168" y="168" text-anchor="middle">${icOf(g, n)}</text>` : '';
+  return `<svg class="gate" viewBox="0 0 320 180" role="img" aria-label="Símbolo de la compuerta ${g.label} con ${n} entradas">${wires}<g class="body">${body}</g>${sw}${led}${lab}${icT}</svg>`;
+}
+
+function ttView(n, truth, o = {}) {
+  const { current = -1, clickable = false, small = false } = o;
+  let h = `<table class="tt${small ? ' sm' : ''}"><thead><tr><th class="mi" scope="col">m</th>${VARS.slice(0, n).map(v => `<th scope="col">${v}</th>`).join('')}<th class="fcol" scope="col">F</th></tr></thead><tbody>`;
+  for (let m = 0; m < (1 << n); m++) {
+    h += `<tr class="${m === current ? 'cur' : ''}${clickable ? ' click' : ''}" data-m="${m}"><td class="mi">${m}</td>${bitsOf(m, n).map(x => `<td>${x}</td>`).join('')}<td class="fcol${truth[m] ? ' on' : ''}">${truth[m]}</td></tr>`;
+  }
+  return h + '</tbody></table>';
+}
+function ttEdit(n, user, marks) {
+  let h = `<table class="tt"><thead><tr><th class="mi" scope="col">m</th>${VARS.slice(0, n).map(v => `<th scope="col">${v}</th>`).join('')}<th class="fcol" scope="col">F</th></tr></thead><tbody>`;
+  for (let m = 0; m < (1 << n); m++) {
+    const u = user[m], mk = marks ? marks[m] || '' : '';
+    h += `<tr><td class="mi">${m}</td>${bitsOf(m, n).map(x => `<td>${x}</td>`).join('')}<td class="fcol edit"><button type="button" class="fbtn ${u == null ? 'q' : 'v' + u} ${mk}" data-m="${m}" aria-label="F en la fila ${m}: ${u == null ? 'vacía' : u}">${u == null ? '?' : u}</button></td></tr>`;
+  }
+  return h + '</tbody></table>';
+}
+
+function kmapHTML(n, vals, o = {}) {
+  const { mode = 'view', groups = [], sel = null, marks = null, cur = -1, small = false, hideIdx = false } = o;
+  const L = kLayout(n);
+  let cells = '';
+  for (let r = 0; r < L.rows; r++) for (let k = 0; k < L.cols; k++) {
+    const m = cellMin(L, r, k), v = vals[m];
+    const cls = ['kc'];
+    if (v === 1) cls.push('on'); if (v == null) cls.push('q');
+    if (sel && sel.has(m)) cls.push('sel'); if (marks && marks[m]) cls.push(marks[m]); if (m === cur) cls.push('cur');
+    const inner = `${hideIdx || small ? '' : `<span class="ki">${m}</span>`}<span class="kv">${v == null ? '?' : v}</span>`;
+    cells += mode === 'view'
+      ? `<div class="${cls.join(' ')}" data-m="${m}">${inner}</div>`
+      : `<button type="button" class="${cls.join(' ')}" data-m="${m}" aria-label="Celda m${m}, ${v == null ? 'sin llenar' : 'vale ' + v}${sel && sel.has(m) ? ', seleccionada' : ''}">${inner}</button>`;
+  }
+  let gs = '';
+  groups.forEach(g => {
+    const inset = small ? 2 + (g.ci % 3) * 2 : 3 + (g.ci % 3) * 4;
+    groupPieces(g.c, n).forEach(p => {
+      const iL = p.oL ? -7 : inset, iR = p.oR ? -7 : inset, iT = p.oT ? -7 : inset, iB = p.oB ? -7 : inset;
+      const st = `--gcol:var(--g${g.ci % 8});left:calc(${p.c0 / L.cols * 100}% + ${iL}px);width:calc(${(p.c1 - p.c0 + 1) / L.cols * 100}% - ${iL + iR}px);top:calc(${p.r0 / L.rows * 100}% + ${iT}px);height:calc(${(p.r1 - p.r0 + 1) / L.rows * 100}% - ${iT + iB}px)`;
+      gs += `<div class="kg${p.oL ? ' oL' : ''}${p.oR ? ' oR' : ''}${p.oT ? ' oT' : ''}${p.oB ? ' oB' : ''}" data-gi="${g.ci}" style="${st}"></div>`;
+    });
+  });
+  const corner = `<div class="kcorner"><span class="kcv">${L.colVars}</span><span class="krv">${L.rowVars}</span></div>`;
+  const ch = `<div class="kch">${L.colCodes.map(c => `<span>${mstr(c, L.cb)}</span>`).join('')}</div>`;
+  const rh = `<div class="krh">${L.rowCodes.map(c => `<span>${mstr(c, L.rb)}</span>`).join('')}</div>`;
+  return `<div class="kmap${small ? ' sm' : ''}" style="--rows:${L.rows};--cols:${L.cols}" role="group" aria-label="Mapa de Karnaugh de ${n} variables">${corner}${ch}${rh}<div class="kcells">${cells}<div class="kgroups" aria-hidden="true">${gs}</div></div></div>`;
+}
+
+const colorTerm = (s, i) => `<span class="t term c" style="--gcol:var(--g${i % 8})">${s}</span>`;
+const formOf = (cover, target, nt, wrap) => target === 'sop' ? sopFromCover(cover, nt, wrap) : posFromCover(cover, nt, wrap);
+const termOf = (c, target, nt) => target === 'sop' ? cubeProdHTML(c, nt) : cubeSumHTML(c, nt, false);
+const plainForm = (cover, target) => stripTags(formOf(cover, target, 'prime'));
+
+function gateRule(g) {
+  return {
+    AND: 'Da 1 solo cuando todas las entradas valen 1.',
+    NAND: 'Da 0 solo cuando todas las entradas valen 1.',
+    OR: 'Da 0 solo cuando todas las entradas valen 0.',
+    NOR: 'Da 1 solo cuando todas las entradas valen 0.',
+    XOR: 'Da 1 cuando el número de entradas en 1 es impar.',
+    XNOR: 'Da 1 cuando el número de entradas en 1 es par (incluido cero).',
+    NOTA: 'Entrega A invertida; las demás entradas no importan.',
+    NOTB: 'Entrega B invertida; las demás entradas no importan.',
+    BUFA: 'Entrega A tal cual; las demás entradas no importan.',
+    BUFB: 'Entrega B tal cual; las demás entradas no importan.'
+  }[g.id];
+}
+function shapeRule(g) {
+  const base = { and: 'cuerpo en forma de D, como AND', or: 'cuerpo curvo que termina en punta, como OR', xor: 'forma de OR con una curva extra en las entradas, como XOR', buf: 'forma de triángulo' }[g.kind];
+  return `tiene ${base}${g.bubble ? ' y una burbuja de negación en la salida' : ''}${g.kind === 'buf' ? `, conectado solo a la entrada ${VARS[g.use]}` : ''}.`;
+}
+function listY(a) { return a.length <= 1 ? a.join('') : a.slice(0, -1).join(', ') + ' y ' + a[a.length - 1]; }
+function gateNotes(g, n, nt) {
+  const vs = VARS.slice(0, n), N = 1 << n, h = N >> 1;
+  const L = (i, ng) => litHTML(i, ng, nt), NEG = x => negHTML(x, nt, true);
+  const prod = vs.join(''), sum = vs.join(' + ');
+  const prodN = vs.map((_, i) => L(i, true)).join(''), sumN = vs.map((_, i) => L(i, true)).join(' + ');
+  const xr = vs.join(' ⊕ ');
+  switch (g.id) {
+    case 'AND': return `<p>F vale 1 solo cuando <b>todas</b> las entradas valen 1. En la tabla hay un único 1 (m${N - 1}); en el mapa esa celda no tiene vecinos con 1, así que el grupo es de una sola celda y la expresión ya es mínima.</p><div class="eq">F = ${prod}</div><p>En POS se agrupan los ${N - 1} ceros con ${n} grupos de ${h} celdas (uno por variable) y sale lo mismo: F = ${prod}.</p>`;
+    case 'NAND': return `<p>Es AND con la salida negada. Por De Morgan, la negación de un producto es la suma de las negaciones:</p><div class="eq">F = ${NEG(prod)} = ${sumN}</div><p>Hay ${N - 1} unos y un solo 0 (m${N - 1}). Cada literal negado cubre la mitad del mapa (${h} celdas); con ${n} grupos se cubren todos los unos.</p>`;
+    case 'OR': return `<p>F vale 0 solo cuando todas las entradas valen 0 (m0). Cada variable sin negar cubre la mitad del mapa (${h} celdas), así que la SOP mínima tiene ${n} términos de una sola letra:</p><div class="eq">F = ${sum}</div><p>Esa misma expresión es un solo maxterm (M0), por eso también es la POS mínima.</p>`;
+    case 'NOR': return `<p>Es OR con la salida negada. Por De Morgan, la negación de una suma es el producto de las negaciones:</p><div class="eq">F = ${NEG(sum)} = ${prodN}</div><p>Solo m0 vale 1, así que el mapa tiene un único 1 sin vecinos.</p>`;
+    case 'XOR': return `<p>F vale 1 cuando el número de entradas en 1 es <b>impar</b> (${h} de ${N} filas).</p><div class="eq">F = ${xr}</div><p>En el mapa los unos forman un tablero de ajedrez: dos celdas vecinas difieren en una sola entrada, y eso cambia la paridad. Ningún 1 tiene un 1 al lado, así que no se puede agrupar nada y la SOP mínima tiene ${h} términos de ${n} letras. Por eso XOR tiene su propio símbolo ⊕.</p>${n === 2 ? `<div class="eq">A ⊕ B = ${L(0, true)}B + A${L(1, true)}</div>` : ''}`;
+    case 'XNOR': return `<p>Es XOR negada: F vale 1 cuando el número de entradas en 1 es <b>par</b>, incluido el caso de todas en 0.</p><div class="eq">F = ${NEG(xr)}</div><p>Igual que XOR, el mapa es un tablero de ajedrez sin unos vecinos: la SOP mínima tiene ${h} términos de ${n} letras.</p>${n === 2 ? `<p>Con 2 entradas también se le llama compuerta de <b>igualdad</b>: F = 1 cuando A = B.</p><div class="eq">F = ${L(0, true)}${L(1, true)} + AB</div>` : ''}`;
+    default: {
+      const u = g.use, ng = g.id.startsWith('NOT'), oth = vs.filter((_, i) => i !== u);
+      return `<p>${ng ? `La salida es ${VARS[u]} invertida` : `La salida copia ${VARS[u]} sin cambios`}; ${listY(oth)} ${oth.length === 1 ? 'no se conecta y no influye' : 'no se conectan y no influyen'}.</p><div class="eq">F = ${L(u, ng)}</div><p>En el mapa los ${h} unos son justo la mitad donde ${VARS[u]} = ${ng ? 0 : 1} y forman un solo grupo. Dentro de ese grupo ${listY(oth)} ${oth.length === 1 ? 'toma' : 'toman'} todos sus valores, por eso se ${oth.length === 1 ? 'elimina' : 'eliminan'}.</p>`;
+    }
+  }
+}
+function stepsHTML(truth, n, target, nt, gateId) {
+  const d = derivation(truth, n, target, nt);
+  let h = '';
+  if (gateId) h += `<div class="route"><h3>Ruta directa</h3>${gateNotes(GATE[gateId], n, nt)}</div>`;
+  h += `<div class="route"><h3>Desde el mapa · ${target === 'sop' ? 'SOP, grupos de 1' : 'POS, grupos de 0'}</h3><ol class="steps">`;
+  d.pre.forEach(s => { h += `<li><div class="eq">${s.eq}</div>${s.law ? `<div class="law">${s.law}</div>` : ''}</li>`; });
+  d.groups.forEach((g, i) => {
+    h += `<li class="g" style="--gcol:var(--g${i % 8})"><div class="gtag">Grupo ${i + 1} · m(${g.mins.join(', ')}) · ${g.mins.length} ${pl(g.mins.length, 'celda', 'celdas')}</div>${g.lines.map(l => `<div class="eq">${l.eq}</div>${l.law ? `<div class="law">${l.law}</div>` : ''}`).join('')}</li>`;
+  });
+  d.post.forEach(s => { h += `<li>${s.eq ? `<div class="eq">${s.eq}</div>` : ''}${s.law ? `<div class="law">${s.law}</div>` : ''}</li>`; });
+  return h + '</ol></div>';
+}
+
+/* ---------- utilidades de interfaz ---------- */
+function setFb(el, f) { el.className = 'fb' + (f ? ' ' + f.kind : ''); el.innerHTML = f ? f.html : ''; }
+function segSet(sel, attr, val) { $$(sel + ' button').forEach(b => b.setAttribute('aria-checked', String(b.dataset[attr] === String(val)))); }
+function focusSel(sel) { const el = $(sel); if (el) el.focus({ preventScroll: true }); }
+function scoreHTML(k) { const s = S.stats[k]; return `Racha <b>${s.racha}</b> · Resueltos <b>${s.ok}</b>/${s.tot}`; }
+function scoreEvent(k, ok, mode) {
+  const s = S.stats[k]; s.tot++; if (ok) { s.ok++; s.racha++; } else s.racha = 0;
+  if (ok && mode) S.stats.modos[mode] = (S.stats.modos[mode] || 0) + 1;
+  store.set('stats', S.stats);
+}
+async function copyText(text, btn) {
+  const done = msg => { const o = btn.textContent; btn.textContent = msg; setTimeout(() => { btn.textContent = o; }, 1400); };
+  try { await navigator.clipboard.writeText(text); done('Copiado'); }
+  catch (e) {
+    const ta = document.createElement('textarea'); ta.value = text; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    let ok = false; try { ok = document.execCommand('copy'); } catch (_) { }
+    ta.remove(); done(ok ? 'Copiado' : 'No se pudo');
+  }
+}
+function randGateId() { let id; do { id = pick(GATES).id; } while (id === S.lastRand); S.lastRand = id; return id; }
+function makeProblem(src, n, simplify) {
+  if (src === 'gate' || src === 'rgate') { const id = src === 'gate' ? S.gate : randGateId(); const g = GATE[id]; return { src, n, gate: id, ast: gateAST(g, n), truth: truthOfGate(g, n) }; }
+  if (src === 'expr') { const ast = randomExpr(n, simplify); return { src, n, gate: null, ast, truth: truthOfAST(ast, n) }; }
+  return { src, n, gate: null, ast: null, truth: randomTruth(n) };
+}
+function onesOf(t) { const r = []; t.forEach((v, m) => { if (v) r.push(m); }); return r; }
+function promptHTML(p, mode) {
+  const nt = S.nt;
+  if (p.gate) {
+    const g = GATE[p.gate];
+    return `<div class="kicker">Compuerta</div><h2 class="ptitle">${g.label}<small>${p.n} entradas</small></h2>${gateSVG(g, p.n, {})}<div class="ex big center">F = ${astHTML(p.ast, nt)}</div>`;
+  }
+  if (p.src === 'expr') {
+    const tip = mode === 'tabla' ? 'Evalúa fila por fila. Conviene resolver primero lo que está dentro de los paréntesis y las negaciones de grupos.'
+      : mode === 'algebra' ? 'Aplica De Morgan para quitar negaciones de grupos, distribuye y luego agrupa. Si te atoras, llena el mapa en una hoja.'
+        : 'Primero evalúa la expresión en cada celda del mapa.';
+    return `<div class="kicker">${mode === 'algebra' ? 'Simplifica' : 'Expresión'} · ${p.n} variables</div><div class="ex big">F = ${astHTML(p.ast, nt)}</div><p class="hint">${tip}</p>`;
+  }
+  const ones = onesOf(p.truth);
+  if (p.src === 'prod') {
+    const zeros = p.truth.map((v, m) => v ? -1 : m).filter(m => m >= 0);
+    return `<div class="kicker">Función de ${p.n} variables</div><div class="ex big">F = ΠM(${zeros.join(', ')})</div><p class="hint">ΠM lista los maxterms: las filas de la tabla donde F = 0. En todas las demás F vale 1.</p>`;
+  }
+  return `<div class="kicker">Función de ${p.n} variables</div><div class="ex big">F = Σm(${ones.join(', ')})</div>${p.src === 'sum' ? `<div class="ex sm">= ${joinTerms(ones.map(m => cubeProdHTML(mstr(m, p.n), nt)))}</div>` : ''}<p class="hint">Σm lista las filas de la tabla donde F = 1; las demás valen 0.${mode === 'algebra' ? ' Busca pares de términos que solo difieren en una variable.' : ''}</p>`;
+}
+function needNew(tab) {
+  const st = S[STATE_KEY[tab]];
+  if (!st) return true;
+  if (st.p.n !== S.n || st.p.src !== S.src[tab]) return true;
+  if (S.src[tab] === 'gate' && st.p.gate !== S.gate) return true;
+  return false;
+}
+function answerFeedback(res, n, target) {
+  const nt = S.nt, form = target === 'sop' ? 'suma de productos (SOP)' : 'producto de sumas (POS)';
+  const W = target === 'sop' ? 'El término' : 'El factor', w = target === 'sop' ? 'término' : 'factor';
+  const tH = c => `<span class="ex inl">${termOf(c, target, nt)}</span>`;
+  if (res.level === 'error') return { kind: 'bad', html: `<b>No pude leer la expresión.</b> ${esc(res.msg)}` };
+  if (res.level === 'wrong') {
+    const rows = [...res.missing.map(m => ({ m, want: 1 })), ...res.extra.map(m => ({ m, want: 0 }))].sort((a, b) => a.m - b.m);
+    const k = rows.length;
+    return { kind: 'bad', html: `<b>No es equivalente.</b> Falla en ${k} ${pl(k, 'fila', 'filas')} de la tabla:<ul>${rows.slice(0, 4).map(r => `<li><span class="mono">${bitsOf(r.m, n).map((b, i) => VARS[i] + '=' + b).join(' ')}</span> (m${r.m}): tu expresión da ${1 - r.want} y debe dar ${r.want}.</li>`).join('')}</ul>${k > 4 ? `<p>…y ${k - 4} más.</p>` : ''}` };
+  }
+  if (res.level === 'form') return { kind: 'warn', html: `<b>Es equivalente</b>, pero no está escrita como ${form}. ${target === 'sop' ? "Usa solo sumas de términos producto, por ejemplo <span class=\"mono\">AB' + C</span>." : "Usa solo productos de factores suma, por ejemplo <span class=\"mono\">(A + B)(A' + C)</span>."}` };
+  if (res.level === 'notmin') {
+    const tl = res.cubes.length, ll = res.cubes.reduce((a, c) => a + c.nl, 0), ot = res.opt.cover.length, ol = res.opt.cover.reduce((a, c) => a + lits(c), 0);
+    const items = res.hints.map(h => {
+      if (h.type === 'contra') return `Un ${w} tiene una variable junto con su complemento: ${target === 'sop' ? 'siempre vale 0' : 'siempre vale 1'} y sobra.`;
+      if (h.type === 'dup') return `${W} ${tH(h.c)} repite una variable (X·X = X).`;
+      if (h.type === 'repeat') return `${W} ${tH(h.c)} está repetido (X + X = X).`;
+      if (h.type === 'grow') return `${W} ${tH(h.c)} se puede reducir a ${tH(h.to)}: su grupo en el mapa puede crecer.`;
+      if (h.type === 'redundant') return `${W} ${tH(h.c)} sobra: sus celdas ya las cubren los demás.`;
+      return '';
+    }).filter(Boolean);
+    if (!items.length) items.push(`Todos tus ${w}s son válidos, pero hay una combinación con menos ${w}s o menos letras.`);
+    return { kind: 'warn', html: `<b>Es equivalente, pero todavía se puede simplificar.</b> La tuya tiene ${tl} ${pl(tl, w, w + 's')} y ${ll} ${pl(ll, 'literal', 'literales')}; la mínima tiene ${ot} y ${ol}.<ul>${items.map(x => `<li>${x}</li>`).join('')}</ul>` };
+  }
+  const best = formOf(res.opt.cover, target, nt);
+  return { kind: 'ok', html: `<b>¡Correcto y mínimo!</b> ${res.same ? '' : `Otra forma mínima igual de válida: <span class="ex inl">F = ${best}</span>`}` };
+}
+function exprBox(p, n, value) {
+  const keys = [...VARS.slice(0, n).map(v => [v, v]), ["'", "x'", 'Negar (apóstrofo)'], ['+', '+', 'OR'], ['·', '·', 'AND'], ['⊕', '⊕', 'XOR'], ['(', '('], [')', ')']];
+  return `<label class="xin-l" for="${p}In">Tu respuesta</label>
+  <div class="xin"><span class="xin-f">F =</span><input id="${p}In" type="text" inputmode="text" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" placeholder="ej. A'B + AC" value="${esc(value)}"></div>
+  <div class="prev" id="${p}Prev">${previewHTML(value, n)}</div>
+  <div class="keys">${keys.map(k => `<button type="button" data-key="${esc(k[0])}" ${k[2] ? `aria-label="${k[2]}"` : ''}>${k[1]}</button>`).join('')}<button type="button" class="wide" data-key="BS" aria-label="Borrar un carácter">⌫</button><button type="button" class="wide" data-key="CLR">Borrar</button></div>
+  <p class="syntax">Escribe <code>A'</code> o <code>!A</code> para negar, <code>AB</code> para AND, <code>+</code> para OR. Ejemplos: <code>A'B + AC</code> · <code>(A + B)(B' + C)</code></p>`;
+}
+function previewHTML(v, n) {
+  if (!v.trim()) return '';
+  try { return `<span class="pl">Se lee</span>F = ${astHTML(parse(v, n), S.nt)}`; }
+  catch (e) { return `<span class="err">${esc(e.user ? e.message : 'Expresión incompleta.')}</span>`; }
+}
+function keyPress(p, key, n) {
+  const inp = $('#' + p + 'In'); if (!inp) return;
+  const a = inp.selectionStart ?? inp.value.length, b = inp.selectionEnd ?? a;
+  let v = inp.value, pos = a;
+  if (key === 'CLR') { v = ''; pos = 0; }
+  else if (key === 'BS') { if (a !== b) { v = v.slice(0, a) + v.slice(b); pos = a; } else if (a > 0) { v = v.slice(0, a - 1) + v.slice(a); pos = a - 1; } }
+  else { const ins = key === '+' ? ' + ' : key === '⊕' ? ' ⊕ ' : key; v = v.slice(0, a) + ins + v.slice(b); pos = a + ins.length; }
+  inp.value = v; try { inp.setSelectionRange(pos, pos); } catch (e) { }
+  inp.dispatchEvent(new Event('input', { bubbles: true }));
+}
+
+/* ---------- APRENDER ---------- */
+function renderLearn() {
+  const g = GATE[S.gate], n = S.n, nt = S.nt, truth = truthOfGate(g, n);
+  const inp = S.inputs.slice(0, n), m = inp.reduce((a, b) => a * 2 + b, 0);
+  $('#lName').innerHTML = `${g.label}<small>${n} entradas</small>`;
+  $('#lIC').textContent = icOf(g, n);
+  $('#lSym').innerHTML = gateSVG(g, n, { inputs: inp, interactive: true, ic: false });
+  $('#lRead').innerHTML = `<span>${inp.map((b, i) => `${VARS[i]} = <b>${b}</b>`).join(' · ')}</span><span>→ fila m${m} → <b class="${truth[m] ? 'fo' : ''}">F = ${truth[m]}</b></span>`;
+  $('#lDirect').innerHTML = `F = ${astHTML(gateAST(g, n), nt)}`;
+  const ones = onesOf(truth), zeros = truth.map((v, k) => v ? -1 : k).filter(k => k >= 0);
+  $('#lTTmeta').textContent = `${1 << n} filas · ${ones.length} ${pl(ones.length, 'uno', 'unos')} · ${zeros.length} ${pl(zeros.length, 'cero', 'ceros')}`;
+  $('#lTT').innerHTML = ttView(n, truth, { current: m, clickable: true });
+  segSet('#lTgt', 't', S.lTgt);
+  const opt = minimize(truth, n, S.lTgt);
+  $('#lKmap').innerHTML = kmapHTML(n, truth, { groups: opt.cover.map((c, i) => ({ c, ci: i })), cur: m });
+  $('#lLegend').innerHTML = opt.cover.map((c, i) => `<li data-gi="${i}" tabindex="0" style="--gcol:var(--g${i % 8})"><span class="lt">${termOf(c, S.lTgt, nt)}</span><span class="lm">m(${cubeMins(c).sort((a, b) => a - b).join(', ')}) · ${cubeMins(c).length} ${pl(cubeMins(c).length, 'celda', 'celdas')}</span></li>`).join('');
+  const sop = minimize(truth, n, 'sop'), pos = minimize(truth, n, 'pos');
+  const wrapS = S.lTgt === 'sop' ? colorTerm : null, wrapP = S.lTgt === 'pos' ? colorTerm : null;
+  $('#lExprs').innerHTML = `
+    <div class="xr"><dt>Expresión de la compuerta</dt><dd><span class="ex">F = ${astHTML(gateAST(g, n), nt)}</span></dd></div>
+    <div class="xr"><dt>Suma canónica (minterms)</dt><dd><div><div class="ex">F = Σm(${ones.join(', ')})</div><div class="ex sm">= ${joinTerms(ones.map(k => cubeProdHTML(mstr(k, n), nt)))}</div></div></dd></div>
+    <div class="xr"><dt>Producto canónico (maxterms)</dt><dd><div><div class="ex">F = ΠM(${zeros.join(', ')})</div><div class="ex sm">= ${zeros.map(k => T(cubeSumHTML(mstr(k, n), nt, zeros.length > 1))).join('')}</div></div></dd></div>
+    <div class="xr key"><dt>SOP mínima</dt><dd><span class="ex big">F = ${sopFromCover(sop.cover, nt, wrapS)}</span><button type="button" class="copy" data-copy="${esc(plainForm(sop.cover, 'sop'))}">Copiar</button></dd></div>
+    <div class="xr key"><dt>POS mínima</dt><dd><span class="ex big">F = ${posFromCover(pos.cover, nt, wrapP)}</span><button type="button" class="copy" data-copy="${esc(plainForm(pos.cover, 'pos'))}">Copiar</button></dd></div>`;
+  $('#lSteps').innerHTML = stepsHTML(truth, n, S.lTgt, nt, g.id);
+}
+function setInputsFromM(m) { bitsOf(m, S.n).forEach((b, i) => { S.inputs[i] = b; }); }
+
+/* ---------- MAPA K ---------- */
+function newMapa() {
+  const p = makeProblem(S.src.mapa, S.n, false);
+  S.km = { p, target: S.tgt.mapa, user: Array(1 << p.n).fill(null), marks: null, step: 1, filled: false, groups: [], sel: new Set(), expr: '', fb: null, counted: false, revealed: false, groupsOk: false, exprOk: false, sol: false };
+}
+function renderMapa() {
+  if (needNew('mapa')) newMapa();
+  const st = S.km, p = st.p, n = p.n, nt = S.nt, want = st.target === 'sop' ? 1 : 0;
+  $('#kmSrc').value = S.src.mapa; segSet('#kmTgt', 't', st.target);
+  $('#kmPrompt').innerHTML = promptHTML(p, 'mapa');
+  $('#kmScore').innerHTML = scoreHTML('mapa');
+  const ug = st.groups.map((g, i) => ({ c: g.c, ci: i }));
+  let hint, map, extra = '', acts;
+  if (st.step === 1) {
+    hint = 'Toca cada celda para ponerle 1 o 0. El número chico es el minterm (la fila de la tabla). Filas y columnas van en código Gray: entre vecinas solo cambia una variable, por eso el orden es 00, 01, 11, 10.';
+    map = kmapHTML(n, st.user, { mode: 'fill', marks: st.marks });
+    acts = '<button class="btn primary" type="button" data-act="check1">Revisar mapa</button><button class="btn" type="button" data-act="fill">Llénalo por mí</button>';
+  } else if (st.step === 2) {
+    hint = `Toca celdas con <b>${want}</b> para seleccionarlas y pulsa <b>Agregar grupo</b>. Un grupo es un rectángulo de 1, 2, 4, 8 o 16 celdas. Los bordes se conectan: la primera columna es vecina de la última y la primera fila de la última. Haz los grupos lo más grandes posible y usa los menos que puedas.`;
+    map = kmapHTML(n, p.truth, { mode: 'group', sel: st.sel, groups: ug });
+    extra = st.groups.length ? `<ul class="glist">${st.groups.map((g, i) => `<li class="${g.issue || ''}" style="--gcol:var(--g${i % 8})"><span>Grupo ${i + 1}</span><span class="lm">m(${g.mins.slice().sort((a, b) => a - b).join(', ')})</span><button type="button" data-delg="${i}" aria-label="Quitar grupo ${i + 1}">×</button></li>`).join('')}</ul>` : '<p class="hint" style="margin-top:12px">Todavía no hay grupos.</p>';
+    acts = `<button class="btn primary" type="button" data-act="addg" ${st.sel.size ? '' : 'disabled'}>Agregar grupo${st.sel.size ? ` (${st.sel.size})` : ''}</button><button class="btn" type="button" data-act="clearsel" ${st.sel.size ? '' : 'disabled'}>Quitar selección</button><button class="btn" type="button" data-act="checkg" ${st.groups.length ? '' : 'disabled'}>Revisar grupos</button><button class="btn ghost" type="button" data-act="solg">Ver grupos de la solución</button>`;
+  } else {
+    hint = st.target === 'sop'
+      ? 'Escribe la suma de productos mínima. Cada grupo de 1 da un término: se quedan las variables que no cambian dentro del grupo (con barra si valen 0) y se eliminan las que cambian.'
+      : 'Escribe el producto de sumas mínimo. Cada grupo de 0 da un factor suma: se quedan las variables que no cambian, sin barra si valen 0 y con barra si valen 1.';
+    map = kmapHTML(n, p.truth, { groups: ug });
+    extra = exprBox('km', n, st.expr);
+    acts = '<button class="btn primary" type="button" data-act="checke">Revisar expresión</button><button class="btn ghost" type="button" data-act="sole">Ver solución</button>';
+  }
+  const steps = [['1', 'Llenar el mapa'], ['2', 'Formar grupos'], ['3', 'Escribir expresión']].map(([s, l]) => {
+    const k = +s, done = (k === 1 && st.filled) || (k === 2 && st.groupsOk) || (k === 3 && st.exprOk);
+    return `<li><button type="button" data-step="${s}" ${k === st.step ? 'aria-current="step"' : ''} class="${done ? 'done' : ''}" ${k > 1 && !st.filled ? 'disabled' : ''}>${l}</button></li>`;
+  }).join('');
+  let sol = '';
+  if (st.sol) {
+    const opt = minimize(p.truth, n, st.target);
+    sol = `<details class="more" open><summary>Solución paso a paso</summary><div class="ex big">F = ${formOf(opt.cover, st.target, nt, colorTerm)}</div>${stepsHTML(p.truth, n, st.target, nt, p.gate)}</details>`;
+  }
+  $('#kmWork').innerHTML = `<ol class="stepper" aria-label="Pasos">${steps}</ol><p class="hint">${hint}</p><div class="kbox" id="kmMap">${map}</div>${extra}<div class="actions">${acts}</div><div class="fb ${st.fb ? st.fb.kind : ''}" role="status" aria-live="polite">${st.fb ? st.fb.html : ''}</div>${sol}`;
+}
+const KM = {
+  check1() {
+    const st = S.km, t = st.p.truth; let bad = 0, empty = 0;
+    st.marks = st.user.map((v, m) => { if (v == null) { empty++; return ''; } if (v !== t[m]) { bad++; return 'bad'; } return 'ok'; });
+    if (empty) st.fb = { kind: 'warn', html: `Te ${pl(empty, 'falta', 'faltan')} ${empty} ${pl(empty, 'celda', 'celdas')} por llenar.${bad ? ` Y hay ${bad} ${pl(bad, 'equivocada', 'equivocadas')}.` : ''}` };
+    else if (bad) st.fb = { kind: 'bad', html: `Hay ${bad} ${pl(bad, 'celda equivocada', 'celdas equivocadas')}. Recuerda que el orden de las columnas es Gray (00, 01, 11, 10): el número chico de cada celda te dice qué fila de la tabla es.` };
+    else { st.filled = true; st.marks = null; st.step = 2; st.fb = { kind: 'ok', html: '<b>Mapa correcto.</b> Ahora forma los grupos.' }; }
+  },
+  fill() { const st = S.km; st.user = st.p.truth.slice(); st.marks = null; st.filled = true; st.step = 2; st.fb = null; },
+  addg() {
+    const st = S.km, n = st.p.n, want = st.target === 'sop' ? 1 : 0, ms = [...st.sel];
+    const c = cubeFromSet(ms, n);
+    if (!c) { st.fb = { kind: 'bad', html: `<b>Ese grupo no es válido.</b> Debe ser un rectángulo de 1, 2, 4, 8 o 16 celdas (con ${ms.length} celdas ${[1, 2, 4, 8, 16].includes(ms.length) ? 'la forma no es un rectángulo o no son vecinas' : 'no se puede: el tamaño tiene que ser potencia de 2'}).` }; return; }
+    const badc = ms.filter(m => st.p.truth[m] !== want);
+    if (badc.length) { st.fb = { kind: 'bad', html: `<b>El grupo incluye ${pl(badc.length, 'una celda', 'celdas')} con ${1 - want}:</b> ${badc.sort((a, b) => a - b).map(m => 'm' + m).join(', ')}. ${st.target === 'sop' ? 'En SOP solo se agrupan unos.' : 'En POS solo se agrupan ceros.'}` }; return; }
+    if (st.groups.some(g => g.c === c)) { st.fb = { kind: 'warn', html: 'Ese grupo ya existe.' }; return; }
+    st.groups.push({ c, mins: ms }); st.groups.forEach(g => { g.issue = ''; }); st.sel.clear(); st.fb = null; st.groupsOk = false;
+  },
+  clearsel() { S.km.sel.clear(); },
+  checkg() {
+    const st = S.km, r = analyzeGroups(st.groups.map(g => g.mins), st.p.n, st.p.truth, st.target);
+    st.groups.forEach((g, i) => { const is = r.items[i].issues; g.issue = is.includes('bad') || is.includes('shape') ? 'bad' : is.length ? 'warn' : ''; });
+    if (r.ok) { st.groupsOk = true; st.fb = { kind: 'ok', html: `<b>¡Agrupación mínima!</b> ${r.opt.cover.length} ${pl(r.opt.cover.length, 'grupo', 'grupos')}. Pasa al paso 3 y escribe la expresión.` }; return; }
+    const li = [];
+    if (r.uncovered.length) li.push(`Faltan por cubrir: ${r.uncovered.map(m => 'm' + m).join(', ')}.`);
+    r.items.forEach((it, i) => {
+      if (it.issues.includes('grow')) li.push(`El grupo ${i + 1} puede crecer a ${cubeMins(it.to).length} celdas.`);
+      if (it.issues.includes('redundant')) li.push(`El grupo ${i + 1} sobra: todas sus celdas ya están en otros grupos.`);
+    });
+    if (!li.length && r.allClean) li.push(`Cubriste todo con grupos válidos, pero se puede con ${r.opt.cover.length} ${pl(r.opt.cover.length, 'grupo', 'grupos')} o con grupos más grandes.`);
+    st.fb = { kind: 'warn', html: `<b>Todavía no es la agrupación mínima.</b><ul>${li.map(x => `<li>${x}</li>`).join('')}</ul>` };
+  },
+  solg() {
+    const st = S.km, opt = minimize(st.p.truth, st.p.n, st.target);
+    st.groups = opt.cover.map(c => ({ c, mins: cubeMins(c), issue: '' })); st.sel.clear(); st.revealed = true; st.groupsOk = true;
+    st.fb = { kind: 'warn', html: `Estos son los ${opt.cover.length} grupos de la solución. Fíjate en que cada uno es lo más grande posible.` };
+  },
+  checke() {
+    const st = S.km, res = analyze(st.expr, st.p.n, st.p.truth, st.target);
+    st.fb = answerFeedback(res, st.p.n, st.target);
+    if (res.level === 'ok') { st.exprOk = true; if (!st.counted) { st.counted = true; scoreEvent('mapa', !st.revealed); } }
+  },
+  sole() {
+    const st = S.km, opt = minimize(st.p.truth, st.p.n, st.target);
+    st.groups = opt.cover.map(c => ({ c, mins: cubeMins(c), issue: '' })); st.sol = true; st.revealed = true; st.fb = null;
+    if (!st.counted) { st.counted = true; scoreEvent('mapa', false); }
+  }
+};
+
+/* ---------- ÁLGEBRA ---------- */
+function newAlgebra() { const p = makeProblem(S.src.algebra, S.n, true); S.alg = { p, target: S.tgt.algebra, expr: '', fb: null, counted: false, revealed: false, sol: false }; }
+function renderAlgebra() {
+  if (needNew('algebra')) newAlgebra();
+  const st = S.alg, p = st.p, n = p.n, nt = S.nt;
+  $('#alSrc').value = S.src.algebra; segSet('#alTgt', 't', st.target);
+  $('#alPrompt').innerHTML = promptHTML(p, 'algebra');
+  $('#alScore').innerHTML = scoreHTML('algebra');
+  let sol = '';
+  if (st.sol) {
+    const opt = minimize(p.truth, n, st.target);
+    sol = `<details class="more" open><summary>Solución paso a paso</summary><div class="ex big">F = ${formOf(opt.cover, st.target, nt, colorTerm)}</div><div class="solmap">${kmapHTML(n, p.truth, { groups: opt.cover.map((c, i) => ({ c, ci: i })) })}</div>${stepsHTML(p.truth, n, st.target, nt, p.gate)}</details>`;
+  }
+  $('#alWork').innerHTML = `<div class="ph"><h2>Escribe la ${st.target === 'sop' ? 'SOP' : 'POS'} mínima</h2></div>
+    <p class="hint">${st.target === 'sop' ? 'Suma de productos con la menor cantidad de términos y, después, de letras.' : 'Producto de sumas con la menor cantidad de factores y, después, de letras.'} Se revisa que sea equivalente fila por fila y que no se pueda simplificar más.</p>
+    ${exprBox('al', n, st.expr)}
+    <div class="actions"><button class="btn primary" type="button" data-act="check">Revisar</button><button class="btn ghost" type="button" data-act="sol">Ver solución</button></div>
+    <div class="fb ${st.fb ? st.fb.kind : ''}" role="status" aria-live="polite">${st.fb ? st.fb.html : ''}</div>${sol}`;
+}
+
+/* ---------- EXAMEN ---------- */
+const QTYPES = ['tabla', 'simbolo', 'salida', 'sop', 'pos', 'unos', 'mapa', 'grupos'];
+function qGen(type, n) {
+  const g = pick(GATES), N = 1 << n, truth = truthOfGate(g, n), nt = S.nt, tt = truth.join('');
+  const gateOpts = () => shuffle([g, ...shuffle(GATES.filter(x => x.id !== g.id && truthOfGate(x, n).join('') !== tt)).slice(0, 3)]).map(x => ({ html: x.label, ok: x.id === g.id }));
+  const nums = (c, cands) => shuffle([c, ...shuffle([...new Set(cands.filter(v => v !== c && v > 0 && v <= N))]).slice(0, 3)]).map(v => ({ html: String(v), ok: v === c }));
+  switch (type) {
+    case 'tabla': return { key: type + g.id + n, prompt: `¿Qué compuerta de ${n} entradas tiene esta tabla de verdad?`, fig: ttView(n, truth, { small: true }), opts: gateOpts(), explain: `Es <b>${g.label}</b>. ${gateRule(g)}` };
+    case 'simbolo': return { key: type + g.id + n, prompt: '¿Qué compuerta representa este símbolo?', fig: gateSVG(g, n, { ic: false }), opts: gateOpts(), explain: `Es <b>${g.label}</b>: ${shapeRule(g)}` };
+    case 'mapa': return { key: type + g.id + n, prompt: `¿Qué compuerta de ${n} entradas tiene este mapa de Karnaugh?`, fig: kmapHTML(n, truth, { small: true }), opts: gateOpts(), explain: `Es <b>${g.label}</b>. ${gateRule(g)}` };
+    case 'salida': {
+      const m = rnd(N), b = bitsOf(m, n);
+      return { key: type + g.id + n + m, prompt: `Una compuerta <b>${g.label}</b> recibe ${b.map((x, i) => `${VARS[i]} = ${x}`).join(', ')}. ¿Cuánto vale F?`, fig: gateSVG(g, n, { inputs: b, out: 'hide', ic: false }), opts: [0, 1].map(v => ({ html: 'F = ' + v, ok: v === truth[m] })), explain: `${gateRule(g)} Con esas entradas, F = ${truth[m]}.` };
+    }
+    case 'sop': case 'pos': {
+      const f = x => formOf(minimize(truthOfGate(x, n), n, type).cover, type, nt);
+      const correct = f(g), seen = new Set([stripTags(correct)]), dist = [];
+      for (const x of shuffle(GATES.filter(x => x.id !== g.id))) { const s = f(x), k = stripTags(s); if (!seen.has(k)) { seen.add(k); dist.push(s); } if (dist.length === 3) break; }
+      return { key: type + g.id + n, mono: true, prompt: `¿Cuál es la forma mínima ${type === 'sop' ? 'SOP (suma de productos)' : 'POS (producto de sumas)'} de <b>${g.label}</b> con ${n} entradas?`, fig: '', opts: shuffle([{ html: correct, ok: true }, ...dist.map(s => ({ html: s, ok: false }))]), explain: `F = <span class="ex inl">${correct}</span>. ${gateRule(g)}` };
+    }
+    case 'unos': {
+      const k = onesOf(truth).length;
+      return { key: type + g.id + n, prompt: `¿En cuántas filas de la tabla de verdad de <b>${g.label}</b> con ${n} entradas vale F = 1?`, fig: '', opts: nums(k, [1, N - 1, N / 2, N / 4, 2, N - 2, 3, N]), explain: `En ${k} de ${N} filas. ${gateRule(g)}` };
+    }
+    case 'grupos': {
+      const o = minimize(truth, n, 'sop'), k = o.cover.length;
+      return { key: type + g.id + n, prompt: `¿Cuántos grupos (términos) tiene la SOP mínima de <b>${g.label}</b> con ${n} entradas?`, fig: '', opts: nums(k, [1, 2, n, N / 2, N / 4, 3, 4, N - 1]), explain: `F = <span class="ex inl">${sopFromCover(o.cover, nt)}</span>: ${k} ${pl(k, 'término', 'términos')}.${g.kind === 'xor' ? ' Los unos forman un tablero de ajedrez y ninguno tiene vecino, así que cada uno es su propio grupo.' : ''}` };
+    }
+  }
+}
+function startQuiz() {
+  const q = S.quiz, seen = new Set(); q.items = [];
+  let guard = 0;
+  while (q.items.length < q.count && guard++ < 800) {
+    const n = q.mix ? pick([2, 3, 4]) : S.n, it = qGen(pick(QTYPES), n);
+    if (seen.has(it.key)) continue; seen.add(it.key); it.n = n; q.items.push(it);
+  }
+  q.i = 0; q.score = 0; q.answered = null; q.phase = 'run';
+}
+function renderExamen() {
+  const q = S.quiz;
+  $('#qStart').hidden = q.phase !== 'start'; $('#qRun').hidden = q.phase !== 'run'; $('#qEnd').hidden = q.phase !== 'end';
+  if (q.phase === 'start') {
+    segSet('#qCount', 'c', q.count); segSet('#qMix', 'x', q.mix ? '1' : '0');
+    $('#qMixN').textContent = `Solo ${S.n}`;
+    const b = S.stats.examen;
+    $('#qBest').textContent = b.veces ? `Mejor resultado: ${b.mejor} % · exámenes hechos: ${b.veces}` : '';
+    return;
+  }
+  if (q.phase === 'run') {
+    const it = q.items[q.i], ans = q.answered;
+    const opts = it.opts.map((o, k) => {
+      let cls = 'qopt' + (it.mono ? ' mono' : '');
+      if (ans != null) { if (o.ok) cls += ' ok'; else if (k === ans) cls += ' bad'; else cls += ' dimmed'; }
+      return `<button type="button" class="${cls}" data-k="${k}" ${ans != null ? 'disabled' : ''}><span class="qk">${k + 1}</span><span class="qv">${o.html}</span></button>`;
+    }).join('');
+    const okAns = ans != null && it.opts[ans].ok;
+    $('#qRun').innerHTML = `<div class="qhead"><span>Pregunta <b>${q.i + 1}</b> de ${q.items.length}</span><span>Aciertos <b>${q.score}</b></span></div>
+      <div class="qbar"><span style="width:${(q.i + (ans != null ? 1 : 0)) / q.items.length * 100}%"></span></div>
+      <p class="qprompt">${it.prompt}</p>${it.fig ? `<div class="qfig">${it.fig}</div>` : ''}<div class="qopts">${opts}</div>
+      ${ans != null ? `<div class="fb ${okAns ? 'ok' : 'bad'}"><b>${okAns ? '¡Correcto!' : 'Incorrecto.'}</b> ${it.explain}</div><div class="actions"><button class="btn primary" type="button" data-q="next">${q.i + 1 < q.items.length ? 'Siguiente' : 'Ver resultado'}</button></div>` : '<p class="hint" style="margin-top:12px">Atajo: teclas 1 a 4 para responder, Enter para seguir.</p>'}`;
+    return;
+  }
+  const tot = q.items.length, pct = Math.round(q.score / tot * 100), miss = q.items.filter(it => !it.opts[it.chosen].ok);
+  const msg = pct === 100 ? 'Perfecto. Prueba mezclando 2, 3 y 4 entradas o con 15 preguntas.' : pct >= 80 ? 'Muy bien. Repasa las que fallaste abajo.' : pct >= 60 ? 'Vas bien. Repasa en Aprender las compuertas que fallaste.' : 'Repasa en Aprender cada compuerta: su tabla, su mapa y su forma mínima.';
+  $('#qEnd').innerHTML = `<h2>Resultado</h2><div class="bigscore">${q.score}<small>/${tot}</small></div><p class="hint" style="margin-top:8px">${pct} % · ${msg}</p>
+    ${miss.length ? `<ul class="review">${miss.map(it => `<li><div class="rq">${it.prompt}</div><div class="ra">Respuesta correcta: <span class="${it.mono ? 'ex inl' : ''}">${it.opts.find(o => o.ok).html}</span>. ${it.explain}</div></li>`).join('')}</ul>` : ''}
+    <div class="actions"><button class="btn primary" type="button" data-q="again">Otro examen</button><button class="btn" type="button" data-q="settings">Cambiar ajustes</button></div>`;
+}
+function answerQuiz(k) {
+  const q = S.quiz; if (q.phase !== 'run' || q.answered != null) return;
+  const it = q.items[q.i]; if (!it.opts[k]) return;
+  q.answered = k; it.chosen = k; if (it.opts[k].ok) q.score++;
+  renderExamen();
+}
+function nextQuiz() {
+  const q = S.quiz; if (q.answered == null) return;
+  if (q.i + 1 < q.items.length) { q.i++; q.answered = null; }
+  else {
+    q.phase = 'end';
+    const pct = Math.round(q.score / q.items.length * 100), b = S.stats.examen;
+    b.veces++; b.mejor = b.mejor == null ? pct : Math.max(b.mejor, pct); store.set('stats', S.stats);
+  }
+  renderExamen();
+  const t = $('#qRun:not([hidden]) .qopt, #qEnd:not([hidden]) .btn'); if (t) t.focus({ preventScroll: true });
+}
+
+/* ---------- navegación y estado global ---------- */
+function syncStrip() {
+  $$('#chips .chip').forEach(b => b.setAttribute('aria-checked', String(b.dataset.g === S.gate)));
+  segSet('#segN', 'n', S.n); segSet('#segNt', 'nt', S.nt);
+  const OTHER = 'Este ejercicio no usa la compuerta seleccionada. Toca una para practicar con ella.';
+  let note = '';
+  if (S.tab === 'examen') note = 'El examen elige las compuertas al azar.';
+  else if (S.tab === 'tabla') { if (!ttUsesGate()) note = ['llenar', 'errores'].includes(S.ttMode) ? OTHER : 'Este modo arma sus propios ejercicios. Toca una compuerta para llenar su tabla.'; }
+  else if ((S.tab === 'mapa' || S.tab === 'algebra') && S.src[S.tab] !== 'gate') note = OTHER;
+  $('#fGate').classList.toggle('dim', !!note);
+  $('#dimNote').textContent = note;
+}
+function render() {
+  if (S.rpTimer && !(S.tab === 'tabla' && S.ttMode === 'rapida')) stopRapida(true);
+  $$('.tabs [role=tab]').forEach(b => { const on = b.dataset.tab === S.tab; b.setAttribute('aria-selected', String(on)); b.tabIndex = on ? 0 : -1; });
+  TABS.forEach(t => { $('#v-' + t).hidden = t !== S.tab; });
+  syncStrip();
+  ({ aprender: renderLearn, tabla: renderTablaTab, mapa: renderMapa, algebra: renderAlgebra, examen: renderExamen })[S.tab]();
+}
+function setTab(t, fromHash) {
+  if (!TABS.includes(t)) t = 'aprender';
+  S.tab = t;
+  if (!fromHash && location.hash !== '#' + t) { try { location.hash = t; } catch (e) { } }
+  render();
+}
+
+function init() {
+  $('#brandMark').innerHTML = gateMini(GATE.NAND);
+  $('#chips').innerHTML = GATES.map(g => `<button type="button" class="chip" role="radio" data-g="${g.id}" aria-checked="false">${gateMini(g)}<span>${g.label}</span></button>`).join('');
+
+  $('.tabs').addEventListener('click', e => { const b = e.target.closest('[data-tab]'); if (b) setTab(b.dataset.tab); });
+  $('.tabs').addEventListener('keydown', e => {
+    if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+    const i = TABS.indexOf(S.tab), j = (i + (e.key === 'ArrowRight' ? 1 : TABS.length - 1)) % TABS.length;
+    setTab(TABS[j]); focusSel(`#tab-${TABS[j]}`);
+  });
+  window.addEventListener('hashchange', () => { const t = location.hash.slice(1); if (TABS.includes(t) && t !== S.tab) setTab(t, true); });
+
+  $('#chips').addEventListener('click', e => {
+    const b = e.target.closest('.chip'); if (!b) return;
+    S.gate = b.dataset.g; store.set('gate', S.gate);
+    if (S.tab === 'tabla') {
+      if (!['llenar', 'errores'].includes(S.ttMode)) { S.ttMode = 'llenar'; store.set('ttMode', S.ttMode); }
+      if (S.ttSrc[S.ttMode] !== 'gate') { S.ttSrc[S.ttMode] = 'gate'; store.set('ttSrc', S.ttSrc); }
+    } else if (['mapa', 'algebra'].includes(S.tab) && S.src[S.tab] !== 'gate') { S.src[S.tab] = 'gate'; store.set('src', S.src); }
+    render();
+  });
+  $('#segN').addEventListener('click', e => { const b = e.target.closest('[data-n]'); if (!b) return; S.n = +b.dataset.n; store.set('n', S.n); render(); });
+  $('#segNt').addEventListener('click', e => { const b = e.target.closest('[data-nt]'); if (!b) return; S.nt = b.dataset.nt; store.set('nt', S.nt); render(); });
+
+  // Aprender
+  const toggleVar = i => { S.inputs[i] = 1 - S.inputs[i]; renderLearn(); focusSel(`#lSym .sw[data-var="${i}"]`); };
+  $('#lSym').addEventListener('click', e => { const s = e.target.closest('.sw'); if (s) toggleVar(+s.dataset.var); });
+  $('#lSym').addEventListener('keydown', e => { const s = e.target.closest('.sw'); if (s && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); toggleVar(+s.dataset.var); } });
+  $('#lTT').addEventListener('click', e => { const r = e.target.closest('tr[data-m]'); if (r) { setInputsFromM(+r.dataset.m); renderLearn(); } });
+  $('#lKmap').addEventListener('click', e => { const c = e.target.closest('.kc[data-m]'); if (c) { setInputsFromM(+c.dataset.m); renderLearn(); } });
+  $('#lTgt').addEventListener('click', e => { const b = e.target.closest('[data-t]'); if (b) { S.lTgt = b.dataset.t; renderLearn(); } });
+  const hl = gi => { const gs = $('#lKmap .kgroups'); if (!gs) return; gs.classList.toggle('focus', gi != null); gs.querySelectorAll('.kg').forEach(k => k.classList.toggle('hl', k.dataset.gi === String(gi))); };
+  $('#lLegend').addEventListener('mouseover', e => { const li = e.target.closest('li[data-gi]'); hl(li ? li.dataset.gi : null); });
+  $('#lLegend').addEventListener('mouseleave', () => hl(null));
+  $('#lLegend').addEventListener('focusin', e => { const li = e.target.closest('li[data-gi]'); hl(li ? li.dataset.gi : null); });
+  $('#lLegend').addEventListener('focusout', () => hl(null));
+  document.addEventListener('click', e => { const c = e.target.closest('.copy[data-copy]'); if (c) copyText(c.dataset.copy, c); });
+
+  initTabla();
+
+  // Mapa K
+  $('#kmSrc').addEventListener('change', e => { S.src.mapa = e.target.value; store.set('src', S.src); render(); });
+  $('#kmNew').addEventListener('click', () => { newMapa(); renderMapa(); });
+  $('#kmTgt').addEventListener('click', e => {
+    const b = e.target.closest('[data-t]'); if (!b) return; S.tgt.mapa = b.dataset.t;
+    if (S.km) { const st = S.km; st.target = b.dataset.t; st.groups = []; st.sel.clear(); st.expr = ''; st.fb = null; st.groupsOk = false; st.exprOk = false; st.sol = false; if (st.step > 1) st.step = 2; }
+    renderMapa();
+  });
+  $('#kmWork').addEventListener('click', e => {
+    const st = S.km; if (!st) return;
+    const stp = e.target.closest('[data-step]'); if (stp && !stp.disabled) { st.step = +stp.dataset.step; st.fb = null; renderMapa(); return; }
+    const cell = e.target.closest('button.kc[data-m]');
+    if (cell) {
+      const m = +cell.dataset.m;
+      if (st.step === 1) { st.user[m] = st.user[m] === 1 ? 0 : 1; if (st.marks) st.marks[m] = ''; st.fb = null; }
+      else if (st.step === 2) { if (st.sel.has(m)) st.sel.delete(m); else st.sel.add(m); st.fb = null; }
+      renderMapa(); focusSel(`#kmMap .kc[data-m="${m}"]`); return;
+    }
+    const del = e.target.closest('[data-delg]'); if (del) { st.groups.splice(+del.dataset.delg, 1); st.groups.forEach(g => { g.issue = ''; }); st.groupsOk = false; st.fb = null; renderMapa(); return; }
+    const k = e.target.closest('[data-key]'); if (k) { keyPress('km', k.dataset.key, st.p.n); return; }
+    const a = e.target.closest('[data-act]'); if (a && KM[a.dataset.act]) { KM[a.dataset.act](); renderMapa(); }
+  });
+  $('#kmWork').addEventListener('input', e => { if (e.target.id === 'kmIn') { S.km.expr = e.target.value; $('#kmPrev').innerHTML = previewHTML(e.target.value, S.km.p.n); } });
+  $('#kmWork').addEventListener('keydown', e => { if (e.target.id === 'kmIn' && e.key === 'Enter') { e.preventDefault(); KM.checke(); renderMapa(); focusSel('#kmIn'); } });
+
+  // Álgebra
+  $('#alSrc').addEventListener('change', e => { S.src.algebra = e.target.value; store.set('src', S.src); render(); });
+  $('#alNew').addEventListener('click', () => { newAlgebra(); renderAlgebra(); });
+  $('#alTgt').addEventListener('click', e => { const b = e.target.closest('[data-t]'); if (!b) return; S.tgt.algebra = b.dataset.t; if (S.alg) { S.alg.target = b.dataset.t; S.alg.fb = null; S.alg.sol = false; } renderAlgebra(); });
+  const alCheck = () => {
+    const st = S.alg, res = analyze(st.expr, st.p.n, st.p.truth, st.target);
+    st.fb = answerFeedback(res, st.p.n, st.target);
+    if (res.level === 'ok' && !st.counted) { st.counted = true; scoreEvent('algebra', !st.revealed); }
+    renderAlgebra();
+  };
+  $('#alWork').addEventListener('click', e => {
+    const st = S.alg; if (!st) return;
+    const k = e.target.closest('[data-key]'); if (k) { keyPress('al', k.dataset.key, st.p.n); return; }
+    const a = e.target.closest('[data-act]'); if (!a) return;
+    if (a.dataset.act === 'check') alCheck();
+    else if (a.dataset.act === 'sol') { st.sol = true; st.revealed = true; if (!st.counted) { st.counted = true; scoreEvent('algebra', false); } renderAlgebra(); }
+  });
+  $('#alWork').addEventListener('input', e => { if (e.target.id === 'alIn') { S.alg.expr = e.target.value; $('#alPrev').innerHTML = previewHTML(e.target.value, S.alg.p.n); } });
+  $('#alWork').addEventListener('keydown', e => { if (e.target.id === 'alIn' && e.key === 'Enter') { e.preventDefault(); alCheck(); focusSel('#alIn'); } });
+
+  // Examen
+  $('#qCount').addEventListener('click', e => { const b = e.target.closest('[data-c]'); if (b) { S.quiz.count = +b.dataset.c; renderExamen(); } });
+  $('#qMix').addEventListener('click', e => { const b = e.target.closest('[data-x]'); if (b) { S.quiz.mix = b.dataset.x === '1'; renderExamen(); } });
+  $('#v-examen').addEventListener('click', e => {
+    const o = e.target.closest('.qopt[data-k]'); if (o) { answerQuiz(+o.dataset.k); return; }
+    const b = e.target.closest('[data-q]'); if (!b) return;
+    const act = b.dataset.q;
+    if (act === 'start' || act === 'again') { startQuiz(); renderExamen(); focusSel('#qRun .qopt'); }
+    else if (act === 'next') nextQuiz();
+    else if (act === 'settings') { S.quiz.phase = 'start'; renderExamen(); }
+  });
+  document.addEventListener('keydown', e => {
+    if (S.tab !== 'examen' || S.quiz.phase !== 'run' || e.altKey || e.ctrlKey || e.metaKey) return;
+    if (/^[1-4]$/.test(e.key)) answerQuiz(+e.key - 1);
+    else if (e.key === 'Enter' && S.quiz.answered != null && !e.target.closest('button')) nextQuiz();
+  });
+
+  const h = location.hash.slice(1);
+  S.tab = TABS.includes(h) ? h : 'aprender';
+  render();
+}
+init();
+</script>
+</body>
+</html>
